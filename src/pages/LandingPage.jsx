@@ -1,29 +1,31 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
+  const handleStart = () => {
+    navigate("/home");
+  };
+
   return (
     <div className="landing-container">
-      {/* Logo */}
       <img
         src="/nomnom-ai logo.PNG"
         alt="NomNom AI Logo"
         className="landing-logo"
       />
 
-      {/* Headline */}
       <h1 className="landing-title">Welcome to NomNom AI</h1>
 
-      {/* Subtitle */}
       <p className="landing-subtitle">
         Let us help you decide what to eat — fast, smart, and within your budget.
         Powered by AI. Personalized for you.
       </p>
 
-      {/* Button */}
-      <button className="landing-button">Get Started</button>
+      <button className="landing-button" onClick={handleStart}>Get Started</button>
 
-      {/* Footer */}
       <footer className="landing-footer">
         © {new Date().getFullYear()} NomNom AI. All rights reserved.
       </footer>
