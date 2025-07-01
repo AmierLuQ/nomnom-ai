@@ -4,6 +4,12 @@ import "./HomePage.css";
 export default function HomePage() {
   return (
     <div className="home-container">
+      <img
+        src="/nomnom-ai logo.PNG"
+        alt="NomNom AI Logo"
+        className="home-logo"
+      />
+
       <h1 className="home-title">Today's Suggestion</h1>
 
       <div className="recommendation-card">

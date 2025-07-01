@@ -63,3 +63,9 @@
   color: #FDFFFC;
   opacity: 0.6;
 }
+
+.home-logo {
+  width: 128px;
+  height: 128px;
+  margin-bottom: 24px;
+}
