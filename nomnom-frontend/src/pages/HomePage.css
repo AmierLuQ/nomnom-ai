@@ -1,0 +1,172 @@
+/* Container and Header */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #011627;
+  color: #FDFFFC;
+  text-align: center;
+  padding: 20px;
+}
+
+.home-header {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.logo-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.home-logo {
+  width: 80px;
+  height: auto;
+}
+
+.home-brand {
+  font-size: 2.4rem; /* Increased size by 20% */
+  font-weight: bold;
+  color: #FDFFFC;
+}
+
+.header-line {
+  border: none;
+  height: 1px;
+  background-color: #FDFFFC;
+  margin: 10px auto 0;
+  width: 80%;
+  opacity: 0.3;
+}
+
+/* Image Box */
+.image-box {
+  position: relative;
+  width: 75%;
+  max-width: 600px;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  margin-bottom: 20px;
+}
+
+.restaurant-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  bottom: 0;
+  background: rgba(1, 22, 39, 0.7);
+  width: 100%;
+  padding: 16px; /* Increased padding for margin */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px; /* More spacing between items */
+  box-sizing: border-box;
+}
+
+.name-rating {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.restaurant-name {
+  margin: 0;
+  font-size: 2rem; /* Slightly bigger name */
+  font-weight: bold;
+}
+
+.rating {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #FDFFFC;
+  flex-shrink: 0;
+}
+
+.description {
+  margin-top: 6px;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-pill {
+  background-color: #41EAD4;
+  color: #011627;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.home-button {
+  background-color: #FC3B48;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.home-button:hover {
+  background-color: #FF7E21;
+}
+
+.home-button.secondary {
+  background-color: #cccccc;
+  color: #011627;
+}
+
+.home-footer {
+  margin-top: auto;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Rating Stars */
+.rating-container {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.star-input {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.star {
+  font-size: 3.5rem; /* Bigger stars */
+  color: rgba(255, 126, 33, 0.3); /* outline look */
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.star.hovered {
+  color: #FF7E21; /* Fill color on hover */
+}
