@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./HomePage.css";
+import "../styles/HomePage.css";
 
 export default function HomePage() {
   const [restaurant, setRestaurant] = useState(null);
