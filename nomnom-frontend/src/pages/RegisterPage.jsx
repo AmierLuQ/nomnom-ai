@@ -23,36 +23,39 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-container">
-      {/* Top Logo Section */}
+      {/* Logo Section */}
       <div className="logo-section">
         <img
           src="/nomnom-ai logo.PNG"
           alt="NomNom AI Logo"
           className="auth-logo"
         />
-        <h1 className="auth-brand">NomNom AI</h1>
+        <h1 className="logo-text">NomNom AI</h1>
       </div>
 
-      {/* Rounded Form Container */}
+      {/* Form Container */}
       <div className="form-container">
-        <h2 className="form-header">Register.</h2>
+        <h2 className="form-title">Register.</h2>
         <p className="form-subtitle">Create your account.</p>
 
         {error && <p className="form-error">{error}</p>}
 
         <form className="auth-form" onSubmit={handleRegister}>
+          <label className="field-label">NAME</label>
           <input
             type="text"
-            placeholder="Username"
+            placeholder="John Doe"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="auth-input"
             required
           />
+
+          <label className="field-label">PASSWORD</label>
           <div className="password-field">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="auth-input"
@@ -65,10 +68,12 @@ export default function RegisterPage() {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
+
+          <label className="field-label">CONFIRM PASSWORD</label>
           <div className="password-field">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Confirm Password"
+              placeholder="••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="auth-input"
@@ -81,6 +86,7 @@ export default function RegisterPage() {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
+
           <button type="submit" className="auth-button">
             Register
           </button>
@@ -88,7 +94,10 @@ export default function RegisterPage() {
 
         <p className="auth-link">
           Already have an account?{" "}
-          <span onClick={() => navigate("/login")} className="link-text">
+          <span
+            onClick={() => navigate("/login")}
+            className="link-text"
+          >
             Login Here.
           </span>
         </p>
