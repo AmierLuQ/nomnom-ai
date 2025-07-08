@@ -37,30 +37,31 @@
   color: #011627;
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
-  padding: 24px 16px;
+  padding: 32px 16px;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .form-title {
   font-family: "Aileron", sans-serif;
   font-weight: 700;
-  font-size: 1.8rem;
+  font-size: 2.2rem; /* Bigger header */
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .form-subtitle {
   font-family: "DM Sans", sans-serif;
   font-size: 1rem;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 28px; /* More spacing under subtitle */
   color: rgba(1, 22, 39, 0.7);
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  align-items: center;
 }
 
 .field-label {
@@ -69,10 +70,13 @@
   color: #FC3B48;
   margin-bottom: 4px;
   text-transform: uppercase;
+  align-self: flex-start;
+  margin-left: 10%;
 }
 
 .auth-input {
-  width: 100%;
+  width: 80%; /* Narrower input fields */
+  max-width: 300px;
   padding: 12px;
   border-radius: 12px;
   border: none;
@@ -83,6 +87,8 @@
 
 .password-field {
   position: relative;
+  width: 80%;
+  max-width: 300px;
 }
 
 .toggle-password {
@@ -98,6 +104,8 @@
 .auth-button {
   background-color: #FF7E21;
   color: #FDFFFC;
+  width: 80%;
+  max-width: 300px;
   padding: 12px;
   border-radius: 12px;
   border: none;
@@ -114,15 +122,18 @@
 }
 
 .auth-link {
-  margin-top: 10px;
+  margin-top: 12px;
   font-family: "DM Sans", sans-serif;
   font-size: 0.9rem;
   text-align: center;
   color: rgba(1, 22, 39, 0.8);
 }
 
+.white-link {
+  color: #FDFFFC; /* Set links to white */
+}
+
 .link-text {
-  color: #011627;
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -135,25 +146,4 @@
   color: rgba(255, 255, 255, 0.5);
   text-align: center;
   width: 100%;
-}
-
-/* ===== Responsive ===== */
-@media (min-width: 768px) {
-  .logo-text {
-    font-size: 2rem;
-  }
-
-  .form-container {
-    padding: 32px 24px;
-    border-top-left-radius: 48px;
-    border-top-right-radius: 48px;
-  }
-
-  .form-title {
-    font-size: 2rem;
-  }
-
-  .auth-button {
-    font-size: 1.1rem;
-  }
 }
