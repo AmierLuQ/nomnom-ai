@@ -3,11 +3,11 @@
   publish = "build"
   # Directory to publish after build
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
+#[[redirects]]
+#  from = "/*"
+#  to = "/index.html"
+#  status = 200
+#  force = true
   # Ensures React Router handles client-side routing
 
 [[headers]]
