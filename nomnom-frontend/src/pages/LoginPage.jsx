@@ -17,34 +17,37 @@ export default function LoginPage() {
 
   return (
     <div className="auth-container">
-      {/* Top Logo Section */}
+      {/* Logo Section */}
       <div className="logo-section">
         <img
           src="/nomnom-ai logo.PNG"
           alt="NomNom AI Logo"
           className="auth-logo"
         />
-        <h1 className="auth-brand">NomNom AI</h1>
+        <h1 className="logo-text">NomNom AI</h1>
       </div>
 
-      {/* Rounded Form Container */}
+      {/* Form Container */}
       <div className="form-container">
-        <h2 className="form-header">Login.</h2>
+        <h2 className="form-title">Login.</h2>
         <p className="form-subtitle">Sign in to continue.</p>
 
         <form className="auth-form" onSubmit={handleLogin}>
+          <label className="field-label">NAME</label>
           <input
             type="text"
-            placeholder="Username"
+            placeholder="John Doe"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="auth-input"
             required
           />
+
+          <label className="field-label">PASSWORD</label>
           <div className="password-field">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="auth-input"
@@ -57,15 +60,19 @@ export default function LoginPage() {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
+
           <button type="submit" className="auth-button">
-            Log In
+            Log in
           </button>
         </form>
 
-        <p className="auth-link">Forgot Password?</p>
-        <p className="auth-link">
+        <p className="auth-link white-link">Forgot Password?</p>
+        <p className="auth-link white-link">
           Don’t have an account?{" "}
-          <span onClick={() => navigate("/register")} className="link-text">
+          <span
+            onClick={() => navigate("/register")}
+            className="link-text white-link"
+          >
             Register Here.
           </span>
         </p>
