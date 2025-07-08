@@ -6,7 +6,7 @@ export default function HomePage() {
   const [showRating, setShowRating] = useState(false);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/restaurants")
+    fetch("https://nomnom-ai.onrender.com/api/restaurants")
       .then((res) => res.json())
       .then((data) => {
         const rst001 = data.find(r => r.ID === "RST_001");
@@ -84,7 +84,7 @@ function RatingPrompt() {
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             key={star}
-            className={`star ${hovered >= star ? 'filled' : ''}`}
+            className={`star ${hovered >= star ? 'hovered' : ''}`}
             onMouseEnter={() => setHovered(star)}
             onMouseLeave={() => setHovered(0)}
           >★</span>
