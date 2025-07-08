@@ -1,4 +1,5 @@
-/* Container and Header */
+/* ========= Base (Mobile-First) ========= */
+
 .home-container {
   display: flex;
   flex-direction: column;
@@ -7,28 +8,28 @@
   background-color: #011627;
   color: #FDFFFC;
   text-align: center;
-  padding: 20px;
+  padding: 16px;
 }
 
 .home-header {
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .logo-text {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .home-logo {
-  width: 80px;
+  width: 50px;
   height: auto;
 }
 
 .home-brand {
-  font-size: 2.4rem; /* Increased size by 20% */
+  font-size: 1.5rem; /* Mobile-friendly size */
   font-weight: bold;
   color: #FDFFFC;
 }
@@ -37,21 +38,20 @@
   border: none;
   height: 1px;
   background-color: #FDFFFC;
-  margin: 10px auto 0;
-  width: 80%;
+  margin: 6px auto 0;
+  width: 90%;
   opacity: 0.3;
 }
 
 /* Image Box */
 .image-box {
   position: relative;
-  width: 75%;
-  max-width: 600px;
+  width: 95%;
   aspect-ratio: 3 / 4;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  margin-bottom: 16px;
 }
 
 .restaurant-image {
@@ -65,11 +65,11 @@
   bottom: 0;
   background: rgba(1, 22, 39, 0.7);
   width: 100%;
-  padding: 16px; /* Increased padding for margin */
+  padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px; /* More spacing between items */
+  gap: 6px;
   box-sizing: border-box;
 }
 
@@ -82,53 +82,53 @@
 
 .restaurant-name {
   margin: 0;
-  font-size: 2rem; /* Slightly bigger name */
+  font-size: 1.2rem;
   font-weight: bold;
 }
 
 .rating {
-  font-size: 1.6rem;
+  font-size: 1rem;
   font-weight: bold;
   color: #FDFFFC;
   flex-shrink: 0;
 }
 
 .description {
-  margin-top: 6px;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.85);
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
 }
 
 .tag-pill {
   background-color: #41EAD4;
   color: #011627;
   border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
+  padding: 3px 8px;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
 /* Buttons */
 .button-group {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .home-button {
   background-color: #FC3B48;
   color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: background-color 0.3s ease;
 }
 
@@ -143,30 +143,97 @@
 
 .home-footer {
   margin-top: auto;
-  font-size: 0.85rem;
-  opacity: 0.7;
+  font-size: 0.75rem;
+  opacity: 0.6;
 }
 
 /* Rating Stars */
 .rating-container {
   text-align: center;
-  margin-top: 30px;
+  margin-top: 24px;
 }
 
 .star-input {
   display: flex;
   justify-content: center;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .star {
-  font-size: 3.5rem; /* Bigger stars */
-  color: rgba(255, 126, 33, 0.3); /* outline look */
+  font-size: 2rem; /* Mobile-friendly */
+  color: rgba(255, 126, 33, 0.3);
   cursor: pointer;
   transition: color 0.3s ease;
 }
 
 .star.hovered {
-  color: #FF7E21; /* Fill color on hover */
+  color: #FF7E21;
+}
+
+
+/* ========= Scale Up for Tablets and Desktops ========= */
+
+@media (min-width: 768px) {
+  .home-logo {
+    width: 70px;
+  }
+
+  .home-brand {
+    font-size: 2rem;
+  }
+
+  .image-box {
+    width: 85%;
+    max-width: 500px;
+  }
+
+  .restaurant-name {
+    font-size: 1.5rem;
+  }
+
+  .rating {
+    font-size: 1.2rem;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+
+  .tag-pill {
+    font-size: 0.85rem;
+    padding: 4px 10px;
+  }
+
+  .home-button {
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+
+  .star {
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-brand {
+    font-size: 2.4rem;
+  }
+
+  .image-box {
+    width: 70%;
+    max-width: 600px;
+  }
+
+  .restaurant-name {
+    font-size: 1.8rem;
+  }
+
+  .rating {
+    font-size: 1.4rem;
+  }
+
+  .star {
+    font-size: 3rem;
+  }
 }
