@@ -36,6 +36,7 @@
   width: 140%; /* Made larger */
   height: auto;
   position: relative;
+  left: -20%; /* Shifted left so top-right touches right edge */
   border-top-right-radius: 225px; /* More exaggerated corner */
   border-top-left-radius: 0;
   padding: 40px 20px;
@@ -103,6 +104,7 @@
   position: absolute;
   right: 12px;
   top: 50%;
+  transform: translateY(-20%);
   background: none;
   border: none;
   cursor: pointer;
