@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import "../styles/AuthPage.css";
 
 export default function LoginPage() {
@@ -11,11 +11,11 @@ export default function LoginPage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    console.log("Form submitted"); // Later connect to API
+    console.log("Logging in...");
   };
 
   return (
-    <div className="login-container">
+    <div className="auth-container">
       {/* Logo Section */}
       <div className="logo-section">
         <img
@@ -53,7 +53,11 @@ export default function LoginPage() {
               className="toggle-btn"
               onClick={togglePassword}
             >
-              {showPassword ? "🙈" : "👁️"}
+              {showPassword ? (
+                <EyeOff size={20} color="#FDFFFC" />
+              ) : (
+                <Eye size={20} color="#FDFFFC" />
+              )}
             </button>
           </div>
 
@@ -62,9 +66,12 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <Link to="/forgot-password" className="forgot-link">
+        <button
+          className="forgot-link"
+          onClick={() => alert("Forgot Password placeholder")}
+        >
           Forgot Password?
-        </Link>
+        </button>
         <p className="register-text">
           Don’t have an account?{" "}
           <span
