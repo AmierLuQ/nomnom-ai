@@ -1,6 +1,6 @@
 /* Base Container */
 .auth-container {
-  background-color: #011627; /* Back to rich black */
+  background-color: #011627;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -17,7 +17,7 @@
 }
 
 .logo-img {
-  width: 72%; /* Slightly larger */
+  width: 72%;
   max-width: 280px;
   height: auto;
 }
@@ -26,16 +26,18 @@
   margin-top: 6px;
   font-family: "Inter Black", sans-serif;
   color: #fdfffc;
-  font-size: 33.6px; /* Slightly smaller for balance */
+  font-size: 33.6px;
   text-align: center;
 }
 
 /* Form Container */
 .form-container {
   background-color: #41ead4;
-  width: 100%;
-  max-width: 450px; /* Limit form size */
-  border-top-right-radius: 150px;
+  width: 140%; /* Made larger */
+  height: auto;
+  position: relative;
+  left: -40%; /* Shifted left so top-right touches right edge */
+  border-top-right-radius: 225px; /* More exaggerated corner */
   border-top-left-radius: 0;
   padding: 40px 20px;
   margin-top: auto;
@@ -44,6 +46,7 @@
   align-items: center;
 }
 
+/* Form Title */
 .form-title {
   font-family: "Inter Bold", sans-serif;
   font-size: 42px;
@@ -66,35 +69,40 @@
   align-items: center;
 }
 
+.form-input-group {
+  width: 100%;
+  max-width: 314px;
+  margin-bottom: 12px;
+}
+
 .form-label {
   font-family: "Inter Bold", sans-serif;
   font-size: 12px;
   color: #fc3b48;
   margin: 10px 0 2px;
-  align-self: flex-start;
-  width: 314px;
+  display: block;
 }
 
+/* Username & Password Inputs */
 .form-input {
-  width: 314px;
+  width: 100%;
   background-color: #011627;
   color: #fdfffc;
   border: none;
   border-radius: 10px;
   padding: 12px 16px;
   font-size: 16px;
-  margin-bottom: 12px;
+  display: block;
 }
 
 .password-field {
   position: relative;
-  width: 314px;
-  margin-bottom: 35px; /* Increased space before button */
+  width: 100%;
 }
 
 .toggle-btn {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -110,10 +118,11 @@
   border: none;
   border-radius: 10px;
   padding: 12px 0;
-  width: 292px;
+  width: 100%;
+  max-width: 292px;
   font-size: 16px;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
 .login-btn:hover {

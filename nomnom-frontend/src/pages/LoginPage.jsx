@@ -32,33 +32,39 @@ export default function LoginPage() {
         <p className="form-subtitle">Sign in to continue.</p>
 
         <form className="login-form" onSubmit={handleLogin}>
-          <label className="form-label">USERNAME</label>
-          <input
-            type="text"
-            placeholder="Enter Username"
-            className="form-input"
-            required
-          />
-
-          <label className="form-label">PASSWORD</label>
-          <div className="password-field">
+          {/* Username Field */}
+          <div className="form-input-group">
+            <label className="form-label">USERNAME</label>
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter Password"
+              type="text"
+              placeholder="Enter Username"
               className="form-input"
               required
             />
-            <button
-              type="button"
-              className="toggle-btn"
-              onClick={togglePassword}
-            >
-              {showPassword ? (
-                <EyeOff size={20} color="#FDFFFC" />
-              ) : (
-                <Eye size={20} color="#FDFFFC" />
-              )}
-            </button>
+          </div>
+
+          {/* Password Field */}
+          <div className="form-input-group">
+            <label className="form-label">PASSWORD</label>
+            <div className="password-field">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter Password"
+                className="form-input"
+                required
+              />
+              <button
+                type="button"
+                className="toggle-btn"
+                onClick={togglePassword}
+              >
+                {showPassword ? (
+                  <EyeOff size={20} color="#FDFFFC" />
+                ) : (
+                  <Eye size={20} color="#FDFFFC" />
+                )}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="login-btn">
