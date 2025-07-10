@@ -33,10 +33,10 @@
 /* Form Container */
 .form-container {
   background-color: #41ead4;
-  width: 100%; /* Made larger */
+  width: 100%; 
   height: auto;
   position: center;
-  border-top-right-radius: 200px; /* More exaggerated corner */
+  border-top-right-radius: 100px;
   border-top-left-radius: 0;
   left: 10px;
   padding: 20px 10px;
@@ -105,8 +105,7 @@
 .toggle-btn {
   position: absolute;
   right: 2px;
-  top: 2px;
-  transform: translateY(-20%);
+  top: 50%;
   background: none;
   border: none;
   cursor: pointer;
