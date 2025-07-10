@@ -34,9 +34,8 @@
 .form-container {
   background-color: #41ead4;
   width: 100%; 
-  height: auto;
+  height: 100%;
   position: right;
-  left: 20px;
   border-top-right-radius: 100px;
   border-top-left-radius: 0;
   margin-top: 10px;
@@ -70,9 +69,7 @@
 
 .form-input-group {
   width: 100%;
-  max-width: 314px;
   margin-bottom: 12px;
-  left: 10px
 }
 
 .form-label {
@@ -81,20 +78,21 @@
   color: #fc3b48;
   margin: 10px 0 2px;
   display: block;
-  right: 20px;
+  transform: translateX(-45px);
 }
 
 /* Username & Password Inputs */
 .form-input {
-  width: 100%;
   background-color: #011627;
   color: #fdfffc;
   border: none;
+  width: 130%;
   border-radius: 10px;
-  padding: 12px 0;
+  padding: 12px 10px;
+  left: 10px;
   font-size: 16px;
   display: block;
-  right: 20px;
+  transform: translateX(-45px);
 }
 
 .password-field {
@@ -110,6 +108,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  transform: translate(30px, -10px);
 }
 
 .login-btn {
