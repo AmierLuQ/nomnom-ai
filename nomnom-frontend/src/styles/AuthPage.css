@@ -1,10 +1,5 @@
-/* Base */
-body {
-  margin: 0;
-  font-family: "DM Sans", sans-serif;
-}
-
-.login-container {
+/* Base Container */
+.auth-container {
   background-color: #011627;
   min-height: 100vh;
   display: flex;
@@ -21,25 +16,30 @@ body {
 }
 
 .logo-img {
-  width: 60%;
-  max-width: 232px;
+  width: 72%; /* Increased by 20% */
+  max-width: 280px;
   height: auto;
 }
 
 .logo-text {
-  margin-top: 12px;
+  margin-top: 6px; /* Reduced gap */
   font-family: "Inter Black", sans-serif;
   color: #fdfffc;
-  font-size: 42px;
+  font-size: 33.6px; /* 20% smaller than original 42px */
   text-align: center;
 }
 
 /* Form Container */
 .form-container {
   background-color: #41ead4;
-  width: 100%;
-  border-top-left-radius: 100px;
-  border-top-right-radius: 100px;
+  width: 120%;
+  height: auto;
+  position: relative;
+  left: -10%; /* Shift left to reveal only top-right quarter */
+  border-top-right-radius: 150px; /* Increased by 50% */
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   padding: 40px 20px;
   margin-top: auto;
 }
@@ -59,6 +59,7 @@ body {
   margin-bottom: 24px;
 }
 
+/* Form */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -69,26 +70,29 @@ body {
   font-family: "Inter Bold", sans-serif;
   font-size: 12px;
   color: #fc3b48;
-  margin: 10px 0 4px;
+  margin: 10px 0 2px; /* Reduced gap between label & input by 20% */
   align-self: flex-start;
+  margin-left: calc(50% - 157px); /* Align label to input left edge */
 }
 
 .form-input {
-  width: 100%;
-  max-width: 314px;
+  width: 314px;
   background-color: #011627;
   color: #fdfffc;
   border: none;
   border-radius: 10px;
   padding: 12px 16px;
   font-size: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .password-field {
   position: relative;
-  width: 100%;
-  max-width: 314px;
+  width: 314px;
+  margin-bottom: 30px; /* Increased space before login button by 15% */
 }
 
 .toggle-btn {
@@ -99,7 +103,7 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 18px;
+  color: #fdfffc;
 }
 
 .login-btn {
@@ -109,8 +113,7 @@ body {
   border: none;
   border-radius: 10px;
   padding: 12px 0;
-  width: 80%;
-  max-width: 292px;
+  width: 292px;
   font-size: 16px;
   cursor: pointer;
   margin-top: 10px;
@@ -128,6 +131,8 @@ body {
   font-size: 12px;
   text-decoration: underline;
   cursor: pointer;
+  background: none;
+  border: none;
 }
 
 .register-text {
@@ -141,20 +146,4 @@ body {
   color: #fdfffc;
   text-decoration: underline;
   cursor: pointer;
-}
-
-/* Responsive */
-@media (min-width: 768px) {
-  .form-container {
-    padding: 50px 40px;
-  }
-
-  .form-title {
-    font-size: 48px;
-  }
-
-  .form-input,
-  .login-btn {
-    font-size: 18px;
-  }
 }
