@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../styles/AuthPage.css";
 
 export default function LoginPage() {
@@ -61,9 +62,9 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <a href="#" className="forgot-link">
+        <Link to="/forgot-password" className="forgot-link">
           Forgot Password?
-        </a>
+        </Link>
         <p className="register-text">
           Don’t have an account?{" "}
           <span
