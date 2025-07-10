@@ -36,11 +36,10 @@
   width: 100%; /* Made larger */
   height: auto;
   position: center;
-  /*left: -20%; /* Shifted left so top-right touches right edge */
-  border-top-right-radius: 225px; /* More exaggerated corner */
+  border-top-right-radius: 200px; /* More exaggerated corner */
   border-top-left-radius: 0;
   padding: 40px 20px;
-  margin-top: auto;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
