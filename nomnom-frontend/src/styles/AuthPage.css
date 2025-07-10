@@ -39,7 +39,7 @@
   border-top-right-radius: 200px; /* More exaggerated corner */
   border-top-left-radius: 0;
   left: 10px;
-  padding: 40px 20px;
+  padding: 20px 10px;
   margin-top: 10px;
   display: flex;
   flex-direction: column;
@@ -52,7 +52,7 @@
   font-size: 42px;
   text-align: center;
   color: #011627;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .form-subtitle {
@@ -81,6 +81,7 @@
   color: #fc3b48;
   margin: 10px 0 2px;
   display: block;
+  left: 20px;
 }
 
 /* Username & Password Inputs */
@@ -93,6 +94,7 @@
   padding: 12px 16px;
   font-size: 16px;
   display: block;
+  left: 20px;
 }
 
 .password-field {
@@ -102,8 +104,8 @@
 
 .toggle-btn {
   position: absolute;
-  right: 12px;
-  top: 50%;
+  right: 2px;
+  top: 2px;
   transform: translateY(-20%);
   background: none;
   border: none;
