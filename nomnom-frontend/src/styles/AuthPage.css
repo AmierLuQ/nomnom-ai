@@ -33,9 +33,9 @@
 /* Form Container */
 .form-container {
   background-color: #41ead4;
-  width: 140%; /* Made larger */
+  width: 100%; /* Made larger */
   height: auto;
-  position: right;
+  position: center;
   /*left: -20%; /* Shifted left so top-right touches right edge */
   border-top-right-radius: 225px; /* More exaggerated corner */
   border-top-left-radius: 0;
