@@ -38,6 +38,7 @@
   position: center;
   border-top-right-radius: 200px; /* More exaggerated corner */
   border-top-left-radius: 0;
+  left: 10px;
   padding: 40px 20px;
   margin-top: 10px;
   display: flex;
