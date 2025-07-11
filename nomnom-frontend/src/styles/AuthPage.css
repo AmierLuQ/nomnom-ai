@@ -34,7 +34,7 @@
 .form-container {
   background-color: #41ead4;
   width: 100%; 
-  height: 100%;
+  height: 528px;
   position: right;
   border-top-right-radius: 100px;
   border-top-left-radius: 0;
@@ -86,11 +86,12 @@
   background-color: #011627;
   color: #fdfffc;
   border: none;
-  width: 130%;
+  width: 135%;
   border-radius: 10px;
   padding: 12px 10px;
   left: 10px;
   font-size: 16px;
+  font-family: "DM Sans", sans-serif;
   display: block;
   transform: translateX(-45px);
 }
@@ -130,6 +131,7 @@
 }
 
 .forgot-link {
+  font-family: "DM Sans Bold", sans-serif;
   display: block;
   text-align: center;
   margin-top: 16px;
@@ -142,6 +144,7 @@
 }
 
 .register-text {
+  font-family: "DM Sans", sans-serif;
   text-align: center;
   color: #fdfffc;
   font-size: 12px;
@@ -149,7 +152,17 @@
 }
 
 .register-link {
+  font-family: "DM Sans Bold", sans-serif;
   color: #fdfffc;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.form-footer {
+  font-family: "DM Sans", sans-serif;
+  margin-top: 32px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #FDFFFC;
+  opacity: 0.5;
 }

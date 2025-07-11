@@ -87,6 +87,9 @@ export default function LoginPage() {
             Register Here
           </span>
         </p>
+        <footer className="form-footer">
+          © {new Date().getFullYear()} NomNom AI. All rights reserved.
+        </footer>
       </div>
     </div>
   );
