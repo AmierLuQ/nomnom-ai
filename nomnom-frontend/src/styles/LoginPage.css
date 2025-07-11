@@ -79,7 +79,7 @@
   color: #fc3b48;
   margin: 10px 0 2px;
   display: block;
-  transform: translateX(-45px);
+  transform: translateX(-27%);
 }
 
 /* Username & Password Inputs */
@@ -94,7 +94,7 @@
   font-size: 14px;
   font-family: "DM Sans", sans-serif;
   display: block;
-  transform: translateX(-50px);
+  transform: translateX(-19%);
 }
 
 .password-field {
@@ -104,7 +104,7 @@
 
 .toggle-btn {
   position: absolute;
-  right: -14px;
+  right: -10px;
   top: 52%;
   background: none;
   border: none;
