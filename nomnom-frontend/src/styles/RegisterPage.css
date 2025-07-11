@@ -89,7 +89,7 @@
   color: #fc3b48;
   margin: 10px 0 2px;
   display: block;
-  transform: translateX(-100%);
+  transform: translateX(-101%);
 }
 
 @media (min-width: 600px) {
