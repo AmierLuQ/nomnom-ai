@@ -81,6 +81,7 @@
   display: block;
 }
 
+
 .form-label-date {
   font-family: "Inter", sans-serif;
   font-size: 12px;
@@ -88,7 +89,19 @@
   color: #fc3b48;
   margin: 10px 0 2px;
   display: block;
-  transform: translateX(-91%);
+  transform: translateX(-110%);
+}
+
+@media (min-width: 600px) {
+  .form-label-date {
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: #fc3b48;
+    margin: 10px 0 2px;
+    display: block;
+    transform: translateX(-91%);
+  }
 }
 
 .form-input {
