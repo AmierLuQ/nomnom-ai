@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "../styles/RegisterPage.css";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [dob, setDob] = useState(null);
 
   const togglePassword = () => setShowPassword(!showPassword);
 
@@ -90,15 +93,13 @@ export default function RegisterPage() {
           </div>
 
           {/* Date of Birth Field */}
-          <div className="form-input-group">
-            <label className="form-label">DATE OF BIRTH</label>
-            <input
-              type="date"
-              placeholder="dd/mm/yyyy"
-              className="form-input"
-              required
-            />
-          </div>
+          <label className="form-label-date">DATE OF BIRTH</label>
+          <DatePicker
+  selected={dob}
+  onChange={(date) => setDob(date)}
+  placeholderText="dd/mm/yyyy"
+  className="form-input"
+/>
 
           {/* Phone Field */}
           <div className="form-input-group">

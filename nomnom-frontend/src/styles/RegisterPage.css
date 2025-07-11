@@ -82,6 +82,16 @@
   transform: translateX(-45px);
 }
 
+.form-label-date {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fc3b48;
+  margin: 10px 0 2px;
+  display: block;
+  transform: translateX(-83px);
+}
+
 .form-input {
   background-color: #011627;
   color: #fdfffc;
