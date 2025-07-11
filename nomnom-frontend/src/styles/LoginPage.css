@@ -34,7 +34,7 @@
 .form-container {
   background-color: #41ead4;
   width: 100%; 
-  height: 528px;
+  height: auto;
   position: right;
   border-top-right-radius: 100px;
   border-top-left-radius: 0;
@@ -75,6 +75,7 @@
 .form-label {
   font-family: "Inter Bold", sans-serif;
   font-size: 12px;
+  font-weight: bold;
   color: #fc3b48;
   margin: 10px 0 2px;
   display: block;
@@ -86,14 +87,14 @@
   background-color: #011627;
   color: #fdfffc;
   border: none;
-  width: 135%;
+  width: 150%;
   border-radius: 10px;
   padding: 12px 10px;
   left: 10px;
-  font-size: 16px;
+  font-size: 14px;
   font-family: "DM Sans", sans-serif;
   display: block;
-  transform: translateX(-45px);
+  transform: translateX(-50px);
 }
 
 .password-field {
@@ -103,8 +104,8 @@
 
 .toggle-btn {
   position: absolute;
-  right: 2px;
-  top: 50%;
+  right: -14px;
+  top: 52%;
   background: none;
   border: none;
   cursor: pointer;
@@ -122,6 +123,7 @@
   width: 100%;
   max-width: 292px;
   font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
   margin-top: 15px;
 }
@@ -161,6 +163,7 @@
 .form-footer {
   font-family: "DM Sans", sans-serif;
   margin-top: 32px;
+  margin-bottom: 80px;
   text-align: center;
   font-size: 0.75rem;
   color: #FDFFFC;

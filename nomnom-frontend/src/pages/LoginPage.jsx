@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import "../styles/AuthPage.css";
+import "../styles/LoginPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -59,9 +59,9 @@ export default function LoginPage() {
                 onClick={togglePassword}
               >
                 {showPassword ? (
-                  <EyeOff size={20} color="#FDFFFC" />
+                  <EyeOff size={18} color="#FDFFFC" />
                 ) : (
-                  <Eye size={20} color="#FDFFFC" />
+                  <Eye size={18} color="#FDFFFC" />
                 )}
               </button>
             </div>

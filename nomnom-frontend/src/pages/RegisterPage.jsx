@@ -1,24 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import "../styles/AuthPage.css";
+import { Eye, EyeOff } from "lucide-react";
+import "../styles/RegisterPage.css";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+
+  const togglePassword = () => setShowPassword(!showPassword);
 
   const handleRegister = (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    console.log("Registering with", { username, password });
-    // TODO: Connect to backend API
+    console.log("Registering account...");
   };
 
   return (
@@ -28,7 +21,7 @@ export default function RegisterPage() {
         <img
           src="/nomnom-ai logo.PNG"
           alt="NomNom AI Logo"
-          className="auth-logo"
+          className="logo-img"
         />
         <h1 className="logo-text">NomNom AI</h1>
       </div>
@@ -36,77 +29,106 @@ export default function RegisterPage() {
       {/* Form Container */}
       <div className="form-container">
         <h2 className="form-title">Register.</h2>
-        <p className="form-subtitle">Create your account.</p>
+        <p className="form-subtitle">Create a new account.</p>
 
-        {error && <p className="form-error">{error}</p>}
-
-        <form className="auth-form" onSubmit={handleRegister}>
-          <label className="field-label">NAME</label>
-          <input
-            type="text"
-            placeholder="John Doe"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="auth-input"
-            required
-          />
-
-          <label className="field-label">PASSWORD</label>
-          <div className="password-field">
+        <form className="register-form" onSubmit={handleRegister}>
+          {/* Userame Field */}
+          <div className="form-input-group">
+            <label className="form-label">USERNAME</label>
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="auth-input"
+              type="text"
+              placeholder="Enter Username"
+              className="form-input"
               required
             />
-            <span
-              className="toggle-password"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
           </div>
 
-          <label className="field-label">CONFIRM PASSWORD</label>
-          <div className="password-field">
+          {/* Name Field */}
+          <div className="form-input-group">
+            <label className="form-label">FULL NAME</label>
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="auth-input"
+              type="text"
+              placeholder="Enter Full Name"
+              className="form-input"
               required
             />
-            <span
-              className="toggle-password"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
           </div>
 
-          <button type="submit" className="auth-button">
-            Register
+          {/* Email Field */}
+          <div className="form-input-group">
+            <label className="form-label">EMAIL</label>
+            <input
+              type="email"
+              placeholder="Enter Email"
+              className="form-input"
+              required
+            />
+          </div>
+
+          {/* Password Field */}
+          <div className="form-input-group">
+            <label className="form-label">PASSWORD</label>
+            <div className="password-field">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter Password"
+                className="form-input"
+                required
+              />
+              <button
+                type="button"
+                className="toggle-btn"
+                onClick={togglePassword}
+              >
+                {showPassword ? (
+                  <EyeOff size={18} color="#FDFFFC" />
+                ) : (
+                  <Eye size={18} color="#FDFFFC" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Date of Birth Field */}
+          <div className="form-input-group">
+            <label className="form-label">DATE OF BIRTH</label>
+            <input
+              type="date"
+              placeholder="dd/mm/yyyy"
+              className="form-input"
+              required
+            />
+          </div>
+
+          {/* Phone Field */}
+          <div className="form-input-group">
+            <label className="form-label">PHONE NO.</label>
+            <input
+              type="tel"
+              placeholder="Enter Phone No."
+              className="form-input"
+              required
+            />
+          </div>
+
+          <button type="submit" className="register-btn">
+            Sign up
           </button>
         </form>
 
-        <p className="auth-link">
+        <p className="register-text">
           Already have an account?{" "}
           <span
+            className="register-link"
             onClick={() => navigate("/login")}
-            className="link-text"
           >
-            Login Here.
+            Login here.
           </span>
         </p>
+        <footer className="form-footer">
+          © {new Date().getFullYear()} NomNom AI. All rights reserved.
+        </footer>
       </div>
-
-      {/* Footer */}
-      <footer className="auth-footer">
-        © {new Date().getFullYear()} NomNom AI. All rights reserved.
-      </footer>
     </div>
   );
 }

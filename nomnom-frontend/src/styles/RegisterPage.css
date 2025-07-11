@@ -1,0 +1,168 @@
+/* Base Container */
+.auth-container {
+  background-color: #011627;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* Logo Section */
+.logo-section {
+  margin-top: 8vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-img {
+  width: 72%;
+  max-width: 280px;
+  height: auto;
+}
+
+.logo-text {
+  margin-top: 6px;
+  font-family: "Inter Black", sans-serif;
+  color: #fdfffc;
+  font-size: 33.6px;
+  text-align: center;
+}
+
+/* Form Container */
+.form-container {
+  background-color: #41ead4;
+  width: 100%;
+  height: auto;
+  position: right;
+  border-top-right-radius: 100px;
+  border-top-left-radius: 0;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Form Title */
+.form-title {
+  font-family: "Inter Bold", sans-serif;
+  font-size: 42px;
+  text-align: center;
+  color: #011627;
+  margin-bottom: 4px;
+}
+
+.form-subtitle {
+  font-family: "DM Sans", sans-serif;
+  text-align: center;
+  color: #011627;
+  margin-bottom: 24px;
+}
+
+/* Form */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form-input-group {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.form-label {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fc3b48;
+  margin: 10px 0 2px;
+  display: block;
+  transform: translateX(-45px);
+}
+
+.form-input {
+  background-color: #011627;
+  color: #fdfffc;
+  border: none;
+  width: 150%;
+  border-radius: 10px;
+  padding: 12px 10px;
+  left: 10px;
+  font-size: 14px;
+  font-family: "DM Sans", sans-serif;
+  display: block;
+  transform: translateX(-50px);
+}
+
+.form-input[type="date"] {
+  color: #75756b; /* Slight opacity */
+  font-size: 14px;
+  font-family: "DM Sans", sans-serif;
+}
+
+.form-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* Inverts black icon to white */
+  cursor: pointer;
+}
+
+
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.toggle-btn {
+  position: absolute;
+  right: -14px;
+  top: 52%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.register-btn {
+  background-color: #ff7e21;
+  color: #011627;
+  font-family: "Inter Bold", sans-serif;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 0;
+  width: 100%;
+  max-width: 292px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.register-btn:hover {
+  background-color: #fc3b48;
+}
+
+.register-text {
+  font-family: "DM Sans", sans-serif;
+  text-align: center;
+  color: #fdfffc;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+.register-link {
+  font-family: "DM Sans Bold", sans-serif;
+  color: #fdfffc;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.form-footer {
+  font-family: "DM Sans", sans-serif;
+  margin-top: 32px;
+  margin-bottom: 80px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #FDFFFC;
+  opacity: 0.5;
+}
