@@ -6,7 +6,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   const handleStart = () => {
-    navigate("/home");
+    navigate("/login"); // Change to Login page instead of Home
   };
 
   return (
@@ -24,7 +24,9 @@ export default function LandingPage() {
         Powered by AI. Personalized for you.
       </p>
 
-      <button className="landing-button" onClick={handleStart}>Get Started</button>
+      <button className="landing-button" onClick={handleStart}>
+        Get Started
+      </button>
 
       <footer className="landing-footer">
         © {new Date().getFullYear()} NomNom AI. All rights reserved.

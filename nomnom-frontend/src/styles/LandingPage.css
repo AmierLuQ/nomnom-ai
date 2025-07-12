@@ -83,10 +83,10 @@
 }
 
 /* ========== Desktops (≥ 1024px) ========== */
-@media (min-width: 1024px) {
+@media (min-width: 600px) {
   .landing-logo {
-    width: 128px;
-    height: 128px;
+    width: 256px;
+    height: 256px;
   }
 
   .landing-title {

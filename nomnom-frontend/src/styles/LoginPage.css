@@ -50,11 +50,12 @@
   font-size: 42px;
   text-align: center;
   color: #011627;
-  margin-bottom: 4px;
+  margin-bottom: 0px;
 }
 
 .form-subtitle {
   font-family: "DM Sans", sans-serif;
+  font-size: 14px;
   text-align: center;
   color: #011627;
   margin-bottom: 24px;
