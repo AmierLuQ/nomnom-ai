@@ -1,6 +1,6 @@
 /* Base Container */
 .auth-container {
-  background-color: #011627;
+  background-image: linear-gradient(#011627, #011627, #010813);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -127,10 +127,12 @@
   font-weight: bold;
   cursor: pointer;
   margin-top: 15px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .login-btn:hover {
   background-color: #fc3b48;
+  transform: scale(1.05);
 }
 
 .forgot-link {

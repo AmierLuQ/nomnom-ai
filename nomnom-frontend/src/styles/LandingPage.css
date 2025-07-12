@@ -1,7 +1,7 @@
 /* ========== Mobile-First Base ========== */
 .landing-container {
   min-height: 100vh;
-  background-color: #011627;
+  background-image: linear-gradient(#011627, #011627, #010813);
   color: #FDFFFC;
   display: flex;
   flex-direction: column;
@@ -9,80 +9,59 @@
   justify-content: center;
   padding: 16px;
   text-align: center;
-  font-family: 'Poppins', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .landing-logo {
-  width: 80px; /* Smaller for mobile */
-  height: 80px;
+  width: 128px;
+  height: 128px;
   margin-bottom: 16px;
 }
 
 .landing-title {
-  font-size: 1.8rem; /* Mobile-friendly size */
-  font-weight: bold;
+  font-family: "Inter Black", sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
   color: #FDFFFC;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .landing-subtitle {
-  color: rgba(255, 255, 255, 0.8);
+  font-family: "DM Sans", sans-serif;
+  color: rgba(253, 255, 252, 0.8);
   font-size: 1rem;
   max-width: 90%;
-  margin-bottom: 24px;
+  margin-bottom: 48px;
 }
 
 .landing-button {
-  background-color: #FC3B48;
-  color: white;
+  background-color: #FF7E21; /* Match Login/Register primary button */
+  color: #011627; /* Dark text like login button */
+  font-family: "Inter Bold", sans-serif;
   font-size: 1rem;
+  font-weight: bold;
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .landing-button:hover {
-  background-color: #FF7E21;
+  background-color: #FC3B48;
   transform: scale(1.05);
 }
 
 .landing-footer {
-  margin-top: 24px;
+  font-family: "DM Sans", sans-serif;
+  margin-top: 32px;
   font-size: 0.75rem;
   color: #FDFFFC;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
-/* ========== Tablets (≥ 768px) ========== */
-@media (min-width: 768px) {
-  .landing-logo {
-    width: 100px;
-    height: 100px;
-  }
-
-  .landing-title {
-    font-size: 2.2rem;
-  }
-
-  .landing-subtitle {
-    font-size: 1.1rem;
-    max-width: 450px;
-  }
-
-  .landing-button {
-    font-size: 1.05rem;
-    padding: 12px 24px;
-  }
-
-  .landing-footer {
-    font-size: 0.8rem;
-  }
-}
-
-/* ========== Desktops (≥ 1024px) ========== */
+/* ========== Desktops (≥ 600px) ========== */
 @media (min-width: 600px) {
   .landing-logo {
     width: 256px;
