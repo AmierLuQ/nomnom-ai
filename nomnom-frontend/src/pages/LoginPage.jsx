@@ -16,6 +16,14 @@ export default function LoginPage() {
 
   return (
     <div className="auth-container">
+      {/* Potato Button */}
+      <button
+        className="potato-button"
+        onClick={() => navigate("/home")}
+      >
+        Potato
+      </button>
+
       {/* Logo Section */}
       <img
         src="/nomnom-ai-text-logo.PNG"

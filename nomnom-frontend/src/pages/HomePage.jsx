@@ -3,22 +3,23 @@ import "../styles/HomePage.css";
 import { FaTimes, FaUndoAlt, FaHeart, FaUtensils, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
-
 export default function HomePage() {
-  const [restaurant, setRestaurant] = useState(null);
+  const [restaurants, setRestaurants] = useState([]); // Store all restaurants
+  const [currentIndex, setCurrentIndex] = useState(0); // Track current index
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     fetch("https://nomnom-ai.onrender.com/api/restaurants")
       .then((res) => res.json())
       .then((data) => {
-        const rst001 = data.find((r) => r.ID === "RST_001");
-        setRestaurant(rst001);
+        setRestaurants(data); // Save all restaurants
       })
       .catch((err) => console.error("API fetch error:", err));
   }, []);
 
-  if (!restaurant) return <p className="loading">Loading...</p>;
+  if (!restaurants.length) return <p className="loading">Loading...</p>;
+
+  const restaurant = restaurants[currentIndex];
 
   const handleSwipe = (direction) => {
     console.log(`Swiped ${direction}`);
@@ -26,24 +27,30 @@ export default function HomePage() {
     if (direction === "down") setShowDetails(false);
   };
 
-  const getStars = (rating) => {
-  const fullStars = Math.floor(rating);
-  const halfStar = rating - fullStars >= 0.5;
+  const handleSkip = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % restaurants.length);
+    setShowDetails(false); // Reset details view
+  };
 
-  return [...Array(5)].map((_, i) => {
-    if (i < fullStars) {
-      return <FaStar key={i} color="#FFD700" />; // Yellow full star
-    }
-    if (i === fullStars && halfStar) {
-      return <FaStarHalfAlt key={i} color="#FFD700" />; // Yellow half star
-    }
-    return <FaRegStar key={i} color="#CCCCCC" />; // Gray empty star
-  });
+  const handleUndo = () => {
+  setCurrentIndex((prevIndex) =>
+    prevIndex === 0 ? restaurants.length - 1 : prevIndex - 1
+  );
+  setShowDetails(false); // Reset details view
 };
 
+  const getStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating - fullStars >= 0.5;
+
+    return [...Array(5)].map((_, i) => {
+      if (i < fullStars) return <FaStar key={i} color="#FFD700" />;
+      if (i === fullStars && halfStar) return <FaStarHalfAlt key={i} color="#FFD700" />;
+      return <FaRegStar key={i} color="#CCCCCC" />;
+    });
+  };
 
   function formatPrice(min, max) {
-    // Strip "RM" and ".00", then format
     const cleanMin = min.replace("RM", "").replace(".00", "");
     const cleanMax = max.replace("RM", "").replace(".00", "");
     return `RM${cleanMin} - ${cleanMax}`;
@@ -87,7 +94,7 @@ export default function HomePage() {
             {[restaurant["Tag 1"], restaurant["Tag 2"], restaurant["Tag 3"]]
               .filter(Boolean)
               .map((tag, index) => (
-                <span key={index} className="pill-box tag ">{tag}</span>
+                <span key={index} className="pill-box tag">{tag}</span>
               ))}
             <span className="pill-box price">
               {formatPrice(restaurant["Est Price Min per Person"], restaurant["Est Price Max per Person"])}
@@ -96,8 +103,23 @@ export default function HomePage() {
 
           {/* Interaction Buttons */}
           <div className="button-group">
-            <button className="action-button skip"><FaTimes /></button>
-            <button className="action-button undo"><FaUndoAlt /></button>
+            <button
+              type="button"
+              className="action-button skip"
+              onClick={(e) => {
+                handleSkip();
+                e.target.blur(); // Removes focus immediately
+              }}
+            >
+              <FaTimes />
+            </button>
+            <button
+              type="button"
+              className="action-button undo"
+              onClick={handleUndo}
+            >
+              <FaUndoAlt />
+            </button>
             <button className="action-button favorite"><FaHeart /></button>
             <button className="action-button eat"><FaUtensils /></button>
           </div>

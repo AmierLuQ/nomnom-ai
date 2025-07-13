@@ -1,86 +1,101 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/LandingPage.css";
+import { Eye, EyeOff } from "lucide-react";
+import "../styles/LoginPage.css";
 
-export default function LandingPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleStart = () => {
-    navigate("/login");
+  const togglePassword = () => setShowPassword(!showPassword);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    console.log("Logging in...");
   };
 
   return (
-    <div className="landing-container">
-      <img
-        src="/nomnom-ai logo.PNG"
-        alt="NomNom AI Logo"
-        className="landing-logo"
-      />
-
-      <h1 className="landing-title">Welcome to NomNom AI</h1>
-
-      <p className="landing-subtitle">
-        Let us help you decide what to eat — fast, smart, and within your budget.
-        Powered by AI. Personalized for you.
-      </p>
-
-      <button className="landing-button" onClick={handleStart}>
-        Get Started
+    <div className="auth-container">
+      {/* Potato Button */}
+      <button
+        className="potato-button"
+        onClick={() => navigate("/home")}
+      >
+        Potato
       </button>
 
-      <div className="features-section">
-        <div className="feature-card">
-          <img
-            src="/onside_coral_nomnom-ai logo.PNG"
-            alt="AI Recommendations"
-            className="feature-icon"
-          />
-          <h3 className="feature-title">AI-Powered Recommendations</h3>
-          <p className="feature-desc">
-            Smart suggestions tailored to your taste, lifestyle, and cravings—getting more accurate the more you use it.
-          </p>
-        </div>
+      {/* Logo Section */}
+      <img
+        src="/nomnom-ai-text-logo.PNG"
+        alt="NomNom AI Logo"
+        className="logo-img"
+      />
 
-        <div className="feature-card">
-          <img
-            src="/onside_orange_nomnom-ai logo.PNG"
-            alt="Quick Decisions"
-            className="feature-icon"
-          />
-          <h3 className="feature-title">Quick & Effortless Decisions</h3>
-          <p className="feature-desc">
-            Swipe and pick in seconds. No more endless debates about “What should we eat?”—we’ve got you covered.
-          </p>
-        </div>
+      {/* Form Container */}
+      <div className="form-container">
+        <h2 className="form-title">Login.</h2>
+        <p className="form-subtitle">Sign in to continue.</p>
 
-        <div className="feature-card">
-          <img
-            src="/onside_coral_nomnom-ai logo.PNG"
-            alt="Budget-Friendly"
-            className="feature-icon"
-          />
-          <h3 className="feature-title">Budget-Friendly Choices</h3>
-          <p className="feature-desc">
-            Find meals that satisfy your cravings without breaking your budget—delicious options for every price range.
-          </p>
-        </div>
+        <form className="login-form" onSubmit={handleLogin}>
+          {/* Username Field */}
+          <div className="form-input-group">
+            <label className="form-label">USERNAME</label>
+            <input
+              type="text"
+              placeholder="Enter Username"
+              className="form-input"
+              required
+            />
+          </div>
 
-        <div className="feature-card">
-          <img
-            src="/onside_orange_nomnom-ai logo.PNG"
-            alt="Minimal Effort"
-            className="feature-icon"
-          />
-          <h3 className="feature-title">Minimal Effort, Maximum Flavor</h3>
-          <p className="feature-desc">
-            Enjoy a seamless, mobile-first experience designed to help you decide fast and start enjoying your meal sooner.
-          </p>
-        </div>
+          {/* Password Field */}
+          <div className="form-input-group">
+            <label className="form-label">PASSWORD</label>
+            <div className="password-field">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter Password"
+                className="form-input"
+                required
+              />
+              <button
+                type="button"
+                className="toggle-btn"
+                onClick={togglePassword}
+              >
+                {showPassword ? (
+                  <EyeOff size={18} color="#FDFFFC" />
+                ) : (
+                  <Eye size={18} color="#FDFFFC" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" className="login-btn">
+            Log in
+          </button>
+        </form>
+
+        <button
+          className="forgot-link"
+          onClick={() => alert("Forgot Password placeholder")}
+        >
+          Forgot Password?
+        </button>
+        <p className="register-text">
+          Don’t have an account?{" "}
+          <span
+            className="register-link"
+            onClick={() => navigate("/register")}
+          >
+            Register Here
+          </span>
+        </p>
+        <footer className="form-footer">
+          © {new Date().getFullYear()} NomNom AI. All rights reserved.
+        </footer>
       </div>
-
-      <footer className="landing-footer">
-        © {new Date().getFullYear()} NomNom AI. All rights reserved.
-      </footer>
     </div>
   );
 }

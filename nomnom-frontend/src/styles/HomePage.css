@@ -30,6 +30,7 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border-radius: 25px;
 }
 .restaurant-image {
   width: 100%;
@@ -81,6 +82,7 @@
 .pill-box {
   color: #011627;
   background-color: #FDFFFC; /* fallback color */
+  max-width: calc((100%-70px)/6);
   font-family: "DM Sans", sans-serif;
   font-weight: 800;
   font-size: 12px;
@@ -101,16 +103,19 @@
   display: flex;
   justify-content:space-evenly;
   vertical-align: middle;
+  align-items: center;
   margin-top: 12px;
   transform: translateX(-20px);
+  width: 100%;
 }
 .action-button {
   background-color: #fdfffc;
   border: 4px solid;
   border-radius: 50%;
-  width: 64px;
-  height: 64px;
-  font-size: 32px;
+  aspect-ratio: 1/1;
+  width: 14%;
+  height: 14%;
+  font-size: 160%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,25 +125,23 @@
 .action-button.skip {
   border-color: #FC3B48;
   color: #FC3B48;
-  width: 80px;
-  height: 80px;
-  font-size: 40px;
+  aspect-ratio: 1/1;
+  width: 16%;
+  height: auto;
+  font-size: 240%;
 }
 .action-button.undo {
   border-color: #41EAD4;
   color: #41EAD4;
-  transform: translateY(8px);
 }
 .action-button.favorite {
   border-color: #ff219b;
   color: #ff219b;
-  transform: translateY(8px);
 }
 .action-button.eat { border-color: #4CAF50;
   color: #4CAF50; 
-  width: 80px;
-  height: 80px;
-  font-size: 40px;
+  width: 16%;
+  font-size: 240%;
 }
 
 .action-button:hover {
@@ -146,51 +149,11 @@
   background-color: rgba(255, 255, 255, 0.2);
 }
 .swipe-indicator {
-  margin-top: 10px;
+  margin-top: 0px;
   font-size: 18px;
   color: #FDFFFC;
-}
-
-/* ==================== Details Overlay ==================== */
-.details-overlay {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(1, 22, 39, 0.9);
-  color: #FDFFFC;
-  padding: 20px;
-  overflow-y: auto;
-}
-.details-name {
-  font-family: "Inter", sans-serif;
-  font-size: 18px;
-  font-weight: bold;
-}
-.details-rating {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  margin-bottom: 10px;
-}
-.details-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.map-placeholder {
-  background-color: #333;
-  height: 150px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.restaurant-info p {
-  font-family: "DM Sans", sans-serif;
-  font-size: 10px;
-  margin: 4px 0;
+  transform: translate(-20px, 10px);
+  opacity: 0.5;
 }
 
 /* ==================== Responsive Styles ==================== */
@@ -206,4 +169,13 @@
   .pill-box {
     padding: 4px 24px;
   }
+}
+
+/* ==================== Footer ==================== */
+.home-footer {
+  font-family: "DM Sans", sans-serif;
+  margin-top: 64px;
+  font-size: 0.75rem;
+  color: #FDFFFC;
+  opacity: 0.5;
 }
