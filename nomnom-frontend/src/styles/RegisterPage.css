@@ -1,38 +1,33 @@
-/* Base Container */
+/* ==================== Base Container ==================== */
 .auth-container {
-  background-image: linear-gradient(#011627, #011627, #010813);
+  background-image: linear-gradient(#011627, #010813, #010813);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Prevent swiping left */
 }
 
-/* Logo Section */
+/* ==================== Logo Section ==================== */
 .logo-section {
-  margin-top: 8vh;
+  margin-top: 12vh;
+  margin-bottom: 12vh;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .logo-img {
+  margin-top: 4vh;
+  margin-bottom: 4vh;
   width: 72%;
   max-width: 280px;
   height: auto;
 }
 
-.logo-text {
-  margin-top: 6px;
-  font-family: "Inter Black", sans-serif;
-  color: #fdfffc;
-  font-size: 33.6px;
-  text-align: center;
-}
-
-/* Form Container */
+/* ==================== Form Container ==================== */
 .form-container {
-  background-color: #41ead4;
+  background-image: linear-gradient(#41ead4, #41ead4bb);
   width: 100%;
   height: auto;
   position: right;
@@ -44,7 +39,7 @@
   align-items: center;
 }
 
-/* Form Title */
+/* ==================== Form Header ==================== */
 .form-title {
   font-family: "Inter Bold", sans-serif;
   font-size: 42px;
@@ -61,7 +56,7 @@
   margin-bottom: 24px;
 }
 
-/* Form */
+/* ==================== Form Body ==================== */
 .register-form {
   display: flex;
   flex-direction: column;
@@ -77,37 +72,32 @@
   font-family: "Inter", sans-serif;
   font-size: 12px;
   font-weight: bold;
-  color: #fc3b48;
+  color: #FC3B48;
   margin: 10px 0 2px;
   display: block;
 }
-
 
 .form-label-date {
   font-family: "Inter", sans-serif;
   font-size: 12px;
   font-weight: bold;
-  color: #fc3b48;
+  color: #FC3B48;
   margin: 10px 0 2px;
   display: block;
   transform: translateX(-101%);
 }
 
+/* Responsive tweak for date label */
 @media (min-width: 600px) {
   .form-label-date {
-    font-family: "Inter", sans-serif;
-    font-size: 12px;
-    font-weight: bold;
-    color: #fc3b48;
-    margin: 10px 0 2px;
-    display: block;
     transform: translateX(-91%);
   }
 }
 
+/* ==================== Input Fields ==================== */
 .form-input {
   background-color: #011627;
-  color: #fdfffc;
+  color: #FDFFFC;
   border: none;
   width: 150%;
   border-radius: 10px;
@@ -128,7 +118,6 @@
   cursor: pointer;
 }
 
-
 .password-field {
   position: relative;
   width: 100%;
@@ -144,8 +133,9 @@
   padding: 0;
 }
 
+/* ==================== Buttons ==================== */
 .register-btn {
-  background-color: #ff7e21;
+  background-color: #FF7E21;
   color: #011627;
   font-family: "Inter Bold", sans-serif;
   border: none;
@@ -161,25 +151,28 @@
 }
 
 .register-btn:hover {
-  background-color: #fc3b48;
+  background-color: #FC3B48;
   transform: scale(1.05);
 }
 
+/* ==================== Links ==================== */
 .register-text {
   font-family: "DM Sans", sans-serif;
   text-align: center;
-  color: #fdfffc;
+  color: #FDFFFC;
   font-size: 12px;
   margin-top: 12px;
 }
 
 .register-link {
   font-family: "DM Sans Bold", sans-serif;
-  color: #fdfffc;
+  color: #FDFFFC;
+  font-weight: bold;
   text-decoration: underline;
   cursor: pointer;
 }
 
+/* ==================== Footer ==================== */
 .form-footer {
   font-family: "DM Sans", sans-serif;
   margin-top: 32px;

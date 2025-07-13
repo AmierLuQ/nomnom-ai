@@ -1,239 +1,209 @@
-/* ========= Base (Mobile-First) ========= */
-
+/* ==================== Base Container ==================== */
 .home-container {
+  background-image: linear-gradient(#011627, #011627, #010813);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
-  background-color: #011627;
   color: #FDFFFC;
+  font-family: "DM Sans", sans-serif;
   text-align: center;
-  padding: 16px;
 }
 
+/* ==================== Header ==================== */
 .home-header {
   width: 100%;
-  margin-bottom: 12px;
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
-
-.logo-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
 .home-logo {
-  width: 50px;
-  height: auto;
+  width: auto;
+  height: 7vh;
 }
 
-.home-brand {
-  font-size: 1.5rem; /* Mobile-friendly size */
-  font-weight: bold;
-  color: #FDFFFC;
-}
-
-.header-line {
-  border: none;
-  height: 1px;
-  background-color: #FDFFFC;
-  margin: 6px auto 0;
-  width: 90%;
-  opacity: 0.3;
-}
-
-/* Image Box */
+/* ==================== Image Box ==================== */
 .image-box {
   position: relative;
-  width: 95%;
-  aspect-ratio: 3 / 4;
-  border-radius: 8px;
+  width: 100vw;
+  aspect-ratio: 2 / 3;
+  max-width: 512px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  margin-bottom: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
-
 .restaurant-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
-.overlay {
+.image-gradient {
   position: absolute;
   bottom: 0;
-  background: rgba(1, 22, 39, 0.7);
   width: 100%;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  box-sizing: border-box;
+  height: 33%;
+  background: linear-gradient(to top, #011627e6, #011627b3, #01162700);
 }
 
-.name-rating {
+/* ==================== Content Overlay ==================== */
+.image-content {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 20px;
+}
+.name-rating-container {
+  max-width: calc(100% - 40px);
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  width: 100%;
+  align-items: flex-end;
 }
-
 .restaurant-name {
-  margin: 0;
-  font-size: 1.2rem;
+  font-family: "Inter", sans-serif;
+  font-size: 140%;
   font-weight: bold;
+  max-width: 70%;
+  text-anchor: end;
+  text-align: left;
+}
+.restaurant-rating {
+  font-family: "Inter", sans-serif;
+  font-size: 105%;
+  font-weight: normal;
+  text-align: right;
 }
 
-.rating {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #FDFFFC;
-  flex-shrink: 0;
-}
-
-.description {
-  margin-top: 4px;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.tags {
+.pill-container {
+  max-width: 100%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  gap: 10px;
+  margin-bottom: 24px;
 }
-
-.tag-pill {
+.pill-box {
+  color: #011627;
+  background-color: #FDFFFC; /* fallback color */
+  font-family: "DM Sans", sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+.pill-box.tag {
   background-color: #41EAD4;
   color: #011627;
-  border-radius: 999px;
-  padding: 3px 8px;
-  font-size: 0.75rem;
-  font-weight: 500;
 }
-
-/* Buttons */
-.button-group {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.home-button {
-  background-color: #FC3B48;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 0.95rem;
-  transition: background-color 0.3s ease;
-}
-
-.home-button:hover {
+.pill-box.price {
   background-color: #FF7E21;
-}
-
-.home-button.secondary {
-  background-color: #cccccc;
   color: #011627;
 }
 
-.home-footer {
-  margin-top: auto;
-  font-size: 0.75rem;
-  opacity: 0.6;
+
+.button-group {
+  display: flex;
+  justify-content:space-evenly;
+  vertical-align: middle;
+  margin-top: 12px;
+  transform: translateX(-20px);
+}
+.action-button {
+  background-color: #fdfffc;
+  border: 4px solid;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease, transform 0.2s ease;
+  vertical-align: middle;
+}
+.action-button.skip {
+  border-color: #FC3B48;
+  color: #FC3B48;
+  width: 80px;
+  height: 80px;
+  font-size: 40px;
+}
+.action-button.undo {
+  border-color: #41EAD4;
+  color: #41EAD4;
+  transform: translateY(8px);
+}
+.action-button.favorite {
+  border-color: #ff219b;
+  color: #ff219b;
+  transform: translateY(8px);
+}
+.action-button.eat { border-color: #4CAF50;
+  color: #4CAF50; 
+  width: 80px;
+  height: 80px;
+  font-size: 40px;
 }
 
-/* Rating Stars */
-.rating-container {
-  text-align: center;
-  margin-top: 24px;
+.action-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.swipe-indicator {
+  margin-top: 10px;
+  font-size: 18px;
+  color: #FDFFFC;
 }
 
-.star-input {
+/* ==================== Details Overlay ==================== */
+.details-overlay {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(1, 22, 39, 0.9);
+  color: #FDFFFC;
+  padding: 20px;
+  overflow-y: auto;
+}
+.details-name {
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+}
+.details-rating {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.details-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.map-placeholder {
+  background-color: #333;
+  height: 150px;
+  border-radius: 10px;
+  margin-bottom: 10px;
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-top: 12px;
+  align-items: center;
+}
+.restaurant-info p {
+  font-family: "DM Sans", sans-serif;
+  font-size: 10px;
+  margin: 4px 0;
 }
 
-.star {
-  font-size: 2rem; /* Mobile-friendly */
-  color: rgba(255, 126, 33, 0.3);
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
+/* ==================== Responsive Styles ==================== */
 
-.star.hovered {
-  color: #FF7E21;
-}
-
-
-/* ========= Scale Up for Tablets and Desktops ========= */
-
-@media (min-width: 768px) {
-  .home-logo {
-    width: 70px;
-  }
-
-  .home-brand {
-    font-size: 2rem;
-  }
-
-  .image-box {
-    width: 85%;
-    max-width: 500px;
-  }
-
+/* Tablets and larger */
+@media (min-width: 600px) {
   .restaurant-name {
-    font-size: 1.5rem;
+    font-size: 160%;
   }
-
-  .rating {
-    font-size: 1.2rem;
+  .restaurant-rating {
+    font-size: 120%;
   }
-
-  .description {
-    font-size: 1rem;
-  }
-
-  .tag-pill {
-    font-size: 0.85rem;
-    padding: 4px 10px;
-  }
-
-  .home-button {
-    font-size: 1rem;
-    padding: 10px 20px;
-  }
-
-  .star {
-    font-size: 2.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .home-brand {
-    font-size: 2.4rem;
-  }
-
-  .image-box {
-    width: 70%;
-    max-width: 600px;
-  }
-
-  .restaurant-name {
-    font-size: 1.8rem;
-  }
-
-  .rating {
-    font-size: 1.4rem;
-  }
-
-  .star {
-    font-size: 3rem;
+  .pill-box {
+    padding: 4px 24px;
   }
 }

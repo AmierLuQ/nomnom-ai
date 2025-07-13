@@ -1,4 +1,4 @@
-/* ========== Mobile-First Base ========== */
+/* ==================== Base Styles ==================== */
 .landing-container {
   min-height: 100vh;
   background-image: linear-gradient(#011627, #011627, #010813);
@@ -12,13 +12,15 @@
   font-family: "DM Sans", sans-serif;
 }
 
+/* ==================== Logo ==================== */
 .landing-logo {
-  width: 70vw;
-  height: 70vw;
+  width: 60vw;
+  height: 60vw;
   margin-top: 24px;
   margin-bottom: 16px;
 }
 
+/* ==================== Titles ==================== */
 .landing-title {
   font-family: "Inter Black", sans-serif;
   font-size: 1.8rem;
@@ -35,9 +37,10 @@
   margin-bottom: 48px;
 }
 
+/* ==================== Button ==================== */
 .landing-button {
-  background-color: #FF7E21; /* Match Login/Register primary button */
-  color: #011627; /* Dark text like login button */
+  background-color: #FF7E21; /* Primary button color */
+  color: #011627;           /* Dark text like login button */
   font-family: "Inter Bold", sans-serif;
   font-size: 1rem;
   font-weight: bold;
@@ -51,13 +54,59 @@
 }
 
 .landing-button:hover {
-  background-color: #FC3B48;
+  background-color: #FC3B48; /* Hover state */
   transform: scale(1.05);
 }
 
+/* ==================== Features Section ==================== */
+.features-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 48px;
+  gap: 20px;
+}
 
+.feature-card {
+  background-image: linear-gradient(#41ead410, #fdfffc10);
+  border-radius: 16px;
+  border-style: solid;
+  border-color: #fdfffc10;
+  padding: 20px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-/* ========== Desktops (≥ 600px) ========== */
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.feature-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: -12px; /* Tightens space under icon */
+}
+
+.feature-title {
+  font-family: "Inter Bold", sans-serif;
+  font-size: 1.1rem;
+  color: #FDFFFC;
+  margin-bottom: 24px;
+}
+
+.feature-desc {
+  font-family: "DM Sans", sans-serif;
+  color: #fdfffcaa; /* Slight opacity for subtler text */
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+/* ==================== Responsive Styles ==================== */
+
+/* Tablets and larger */
 @media (min-width: 600px) {
   .landing-logo {
     width: 256px;
@@ -83,51 +132,7 @@
   }
 }
 
-/* ========== Features Section ========== */
-.features-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 48px;
-  gap: 20px;
-}
-
-.feature-card {
-  background-image: linear-gradient(#41ead410, #fdfffc10);
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  max-width: 320px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-}
-
-.feature-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: -12px;
-}
-
-.feature-title {
-  font-family: "Inter Bold", sans-serif;
-  font-size: 1.1rem;
-  color: #FDFFFC;
-  margin-bottom: 24px;
-}
-
-.feature-desc {
-  font-family: "DM Sans", sans-serif;
-  color: #fdfffcaa;
-  text-align: left;
-  font-size: 0.8rem;
-}
-
-/* Responsive: 2-column grid on larger screens */
+/* Features grid on larger screens */
 @media (min-width: 768px) {
   .features-section {
     flex-direction: row;
@@ -141,6 +146,7 @@
   }
 }
 
+/* ==================== Footer ==================== */
 .landing-footer {
   font-family: "DM Sans", sans-serif;
   margin-top: 64px;

@@ -55,7 +55,7 @@ export default function LandingPage() {
 
         <div className="feature-card">
           <img
-            src="/onside_orange_nomnom-ai logo.PNG"
+            src="/onside_coral_nomnom-ai logo.PNG"
             alt="Budget-Friendly"
             className="feature-icon"
           />
@@ -67,7 +67,7 @@ export default function LandingPage() {
 
         <div className="feature-card">
           <img
-            src="/onside_coral_nomnom-ai logo.PNG"
+            src="/onside_orange_nomnom-ai logo.PNG"
             alt="Minimal Effort"
             className="feature-icon"
           />

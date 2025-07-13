@@ -17,14 +17,11 @@ export default function LoginPage() {
   return (
     <div className="auth-container">
       {/* Logo Section */}
-      <div className="logo-section">
-        <img
-          src="/nomnom-ai logo.PNG"
-          alt="NomNom AI Logo"
-          className="logo-img"
-        />
-        <h1 className="logo-text">NomNom AI</h1>
-      </div>
+      <img
+        src="/nomnom-ai-text-logo.PNG"
+        alt="NomNom AI Logo"
+        className="logo-img"
+      />
 
       {/* Form Container */}
       <div className="form-container">
