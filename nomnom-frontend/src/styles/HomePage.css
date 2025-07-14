@@ -27,10 +27,9 @@
   width: 100vw;
   aspect-ratio: 2 / 3;
   max-width: 512px;
-  border-radius: 20px;
+  border-radius: 25px;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  border-radius: 25px;
 }
 .restaurant-image {
   width: 100%;
@@ -43,16 +42,29 @@
   width: 100%;
   height: 33%;
   background: linear-gradient(to top, #011627e6, #011627b3, #01162700);
+  transition: height 0.3s ease;
+}
+
+.image-box.expanded .image-gradient {
+  height: 100%; /* cover whole image when expanded */
 }
 
 /* ==================== Content Overlay ==================== */
 .image-content {
   position: absolute;
   bottom: 0;
+  top: 0; /* anchor to top */
   width: 100%;
+  height: 100%; /* fill entire image */
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* default view = anchored to bottom */
+  transition: justify-content 0.3s ease;
+  transform: translateY(-40px);
 }
 .name-rating-container {
+  margin-top: 20px;
   max-width: calc(100% - 40px);
   display: flex;
   justify-content: space-between;
@@ -82,7 +94,7 @@
 .pill-box {
   color: #011627;
   background-color: #FDFFFC; /* fallback color */
-  max-width: calc((100%-70px)/6);
+  max-width: calc((100%-70px)/4);
   font-family: "DM Sans", sans-serif;
   font-weight: 800;
   font-size: 12px;
@@ -133,13 +145,19 @@
 .action-button.undo {
   border-color: #41EAD4;
   color: #41EAD4;
+  aspect-ratio: 1/1;
+  height: auto;
 }
 .action-button.favorite {
   border-color: #ff219b;
   color: #ff219b;
+  aspect-ratio: 1/1;
+  height: auto;
 }
 .action-button.eat { border-color: #4CAF50;
   color: #4CAF50; 
+  aspect-ratio: 1/1;
+  height: auto;
   width: 16%;
   font-size: 240%;
 }
@@ -150,11 +168,86 @@
 }
 .swipe-indicator {
   margin-top: 0px;
-  font-size: 18px;
+    font-size: 18px;
   color: #FDFFFC;
   transform: translate(-20px, 10px);
   opacity: 0.5;
 }
+
+/* =================== Description View =================== */
+.image-box.expanded .image-gradient {
+  height: 100%; /* cover whole image when expanded */
+}
+
+/* Expanded description container */
+.details-container {
+  display: none; /* Hidden by default */
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  color: #FDFFFC;
+  font-family: "DM Sans", sans-serif;
+  font-size: 10px;
+  padding-top: 10px;
+}
+
+.image-box.expanded .details-container {
+  display: flex; /* Show in expanded view */
+}
+
+/* Anchoring name, tags, description to top */
+.image-box.expanded .image-content {
+  background: linear-gradient(to top, #011627e6, #011627b3, #01162700);
+  justify-content: flex-start; /* expanded view = anchored to top */
+}
+
+.image-box.expanded .pill-container {
+  margin-bottom: 12px; /* Less space between tags and description */
+}
+
+.map-placeholder {
+  width: 90%;
+  height: 192px;
+  background-color: #011627;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FDFFFC;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  margin: 10px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Styling individual info rows */
+.info-row {
+  color: #fdfffc;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.info-row .status-open {
+  color: #4CAF50; /* Green */
+  font-weight: bold;
+}
+
+.info-row .status-closed {
+  color: #FC3B48; /* Red */
+  font-weight: bold;
+}
+
+.name-rating-container,
+.pill-container,
+.details-container {
+  transition: all 0.3s ease;
+}
+
+
 
 /* ==================== Responsive Styles ==================== */
 

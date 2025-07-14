@@ -53,7 +53,7 @@ export default function HomePage() {
   function formatPrice(min, max) {
     const cleanMin = min.replace("RM", "").replace(".00", "");
     const cleanMax = max.replace("RM", "").replace(".00", "");
-    return `RM${cleanMin} - ${cleanMax}`;
+    return `RM ${cleanMin}-${cleanMax}`;
   }
 
   return (
@@ -101,6 +101,37 @@ export default function HomePage() {
             </span>
           </div>
 
+          {/* Description Box */}
+          {showDetails && (
+            <div className="details-container">
+              {/* Map Placeholder */}
+              <div className="map-placeholder">
+                📍 Map Placeholder
+              </div>
+              <div className="info-row">
+                📍 <span>{restaurant.Location || "3.139, 101.686"}</span>
+              </div>
+              <div className="info-row">
+                📝 <span>{restaurant.Description || "No description provided."}</span>
+              </div>
+              <div className="info-row">
+                ⏰{" "}
+                <span>
+                  <span className={restaurant.Open ? "status-open" : "status-closed"}>
+                    {restaurant.Open ? "Open" : "Closed"}
+                  </span>{" "}
+                  • {restaurant["Opening Hours"] || "10:00 AM - 10:00 PM"}
+                </span>
+              </div>
+              <div className="info-row">
+                💸 <span>{formatPrice(restaurant["Est Price Min per Person"], restaurant["Est Price Max per Person"])} per person</span>
+              </div>
+              <div className="info-row">
+                📞 <span>{restaurant.Phone || "0133997134"}</span>
+              </div>
+            </div>
+          )}
+
           {/* Interaction Buttons */}
           <div className="button-group">
             <button
@@ -125,7 +156,10 @@ export default function HomePage() {
           </div>
 
           {/* Swipe Indicator */}
-          <div className="swipe-indicator">
+          <div
+            className="swipe-indicator"
+            onClick={() => setShowDetails(!showDetails)}
+          >
             {showDetails ? <FaChevronDown /> : <FaChevronUp />}
           </div>
         </div>
