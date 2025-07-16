@@ -33,7 +33,7 @@ restaurants = load_json('restaurants.json')
 tags = load_json('tags.json')
 meal_times = load_json('meal_times.json')
 
-# --- Database Models ---
+# --- User Model ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -66,27 +66,28 @@ def get_users():
 def register():
     data = request.get_json()
     username = data.get('username')
-    name = data.get('fullName')  # 👈 Get full name
+    name = data.get('fullName')  # ✅ React sends fullName
     email = data.get('email')
-    phone = data.get('phone')    # 👈 Get phone
-    dob_str = data.get('dob')    # 👈 Get dob as string (e.g., "2025-07-16")
+    phone = data.get('phone')
+    dob_str = data.get('dob')    # Expecting YYYY-MM-DD
     password = data.get('password')
 
-    # Parse DOB string to date object
+    # Handle DOB safely
     dob = None
     if dob_str:
-        dob = datetime.datetime.strptime(dob_str, "%Y-%m-%d").date()
+        try:
+            dob = datetime.datetime.strptime(dob_str, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({'message': 'Invalid date format'}), 400
 
-    # Check if user exists
+    # Check for duplicate username or email
     if User.query.filter_by(username=username).first():
-        return jsonify({'message': 'Username already registered'}), 409
+        return jsonify({'message': 'Username already exists'}), 409
     if User.query.filter_by(email=email).first():
-        return jsonify({'message': 'Email already registered'}), 409
+        return jsonify({'message': 'Email already exists'}), 409
 
-    # Hash password
     hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
 
-    # Create new user
     new_user = User(
         username=username,
         name=name,
@@ -95,17 +96,23 @@ def register():
         dob=dob,
         password=hashed_pw
     )
-    db.session.add(new_user)
-    db.session.commit()
 
-    return jsonify({'message': 'User registered successfully'}), 201
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'message': 'User registered successfully'}), 201
+    except Exception as e:
+        db.session.rollback()
+        print("Registration error:", e)
+        return jsonify({'message': 'Server error during registration'}), 500
+
 
 
 # ✅ Login User
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')  # <-- changed to username
+    username = data.get('username')  # ✅ Username here
     password = data.get('password')
 
     user = User.query.filter_by(username=username).first()
@@ -116,8 +123,6 @@ def login():
             'username': user.username
         }), 200
     return jsonify({'message': 'Invalid credentials'}), 401
-
-
 
 
 # ✅ Get All Restaurants

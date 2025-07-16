@@ -20,10 +20,10 @@ export default function RegisterPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError(""); // Reset error
 
     try {
-      const response = await fetch("https://your-backend.onrender.com/api/register", {
+      const response = await fetch("https://nomnom-ai.onrender.com/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export default function RegisterPage() {
           fullName: fullName,
           email: email,
           phone: phone,
-          dob: dob ? dob.toISOString().split("T")[0] : null, // Format DOB YYYY-MM-DD
+          dob: dob ? dob.toISOString().split("T")[0] : null, // Format YYYY-MM-DD
           password: password,
         }),
       });
@@ -41,9 +41,11 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Registration successful! You can now log in.");
+        // ✅ Registration successful
+        alert("🎉 Account created! You can now log in.");
         navigate("/login"); // Redirect to login page
       } else {
+        // ❌ Backend responded with error
         setError(data.message || "Registration failed. Try again.");
       }
     } catch (err) {
@@ -83,7 +85,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Name Field */}
+          {/* Full Name Field */}
           <div className="register-form-input-group">
             <label className="register-form-label">FULL NAME</label>
             <input
