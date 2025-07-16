@@ -7,6 +7,9 @@ import datetime
 import json
 import os
 
+with open('data/users.json', 'r', encoding='utf-8') as f:
+    user_json_data = json.load(f)
+
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
@@ -52,13 +55,36 @@ with app.app_context():
 
 # ✅ Check User List
 @app.route('/api/users', methods=['GET'])
+@app.route('/api/users', methods=['GET'])
 def get_users():
     users = User.query.all()
-    return jsonify([{
-        'username': user.username,
-        'name': user.name,
-        'email': user.email
-    } for user in users])
+    result = []
+
+    for user in users:
+        # Basic DB info
+        user_data = {
+            'username': user.username,
+            'name': user.name,
+            'email': user.email
+        }
+
+        # Find matching JSON entry by username
+        json_entry = next((u for u in user_json_data if u["Username"].lower() == user.username), None)
+        if json_entry:
+            # Merge extra fields
+            user_data.update({
+                'age': json_entry.get('Age'),
+                'gender': json_entry.get('Gender'),
+                'location': json_entry.get('Location'),
+                'last_login': json_entry.get('Last Login'),
+                'latitude': json_entry.get('Latitude'),
+                'longitude': json_entry.get('Longitude'),
+            })
+
+        result.append(user_data)
+
+    return jsonify(result), 200
+
 
 
 # ✅ Register User
