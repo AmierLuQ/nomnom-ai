@@ -65,7 +65,7 @@ def get_users():
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data.get('username')
+    username = data.get('username').lower()
     name = data.get('fullName')  # ✅ React sends fullName
     email = data.get('email')
     phone = data.get('phone')
@@ -81,7 +81,7 @@ def register():
             return jsonify({'message': 'Invalid date format'}), 400
 
     # Check for duplicate username or email
-    if User.query.filter_by(username=username).first():
+    if User.query.filter(db.func.lower(User.username) == username).first():
         return jsonify({'message': 'Username already exists'}), 409
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already exists'}), 409
@@ -112,10 +112,10 @@ def register():
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')  # ✅ Username here
+    username = data.get('username').lower()  # ✅ Username here
     password = data.get('password')
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter(db.func.lower(User.username) == username).first()
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity=str(user.id))
         return jsonify({
