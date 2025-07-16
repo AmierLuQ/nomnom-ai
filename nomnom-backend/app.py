@@ -62,37 +62,34 @@ with app.app_context():
 
 # ✅ Check User List
 @app.route('/api/users', methods=['GET'])
-@app.route('/api/users', methods=['GET'])
 def get_users():
-    users = User.query.all()
-    result = []
+    try:
+        users = User.query.all()
+        result = []
 
-    for user in users:
-        # Basic DB info
-        user_data = {
-            'username': user.username,
-            'name': user.name,
-            'email': user.email,
-            'dob' : user.dob
-        }
+        for u in users:
+            user_data = {
+                'id': u.id,
+                'username': u.username,
+                'name': u.name,
+                'email': u.email,
+                'phone': u.phone,
+                'age': u.age,
+                'gender': u.gender,
+                'location': u.location,
+                'latitude': u.latitude,
+                'longitude': u.longitude,
+                'dob': u.dob.isoformat() if u.dob else None,  # 👈 Format date safely
+                'last_login': u.last_login.isoformat() if u.last_login else None,
+                'created_at': u.created_at.isoformat() if u.created_at else None
+            }
+            result.append(user_data)
 
-        # Find matching JSON entry by username
-        json_entry = next((u for u in user_json_data if u["Username"].lower() == user.username), None)
-        if json_entry:
-            # Merge extra fields
-            user_data.update({
-                'age': json_entry.get('Age'),
-                'gender': json_entry.get('Gender'),
-                'location': json_entry.get('Location'),
-                'last_login': json_entry.get('Last Login'),
-                'latitude': json_entry.get('Latitude'),
-                'longitude': json_entry.get('Longitude'),
-            })
+        return jsonify(result), 200
 
-        result.append(user_data)
-
-    return jsonify(result), 200
-
+    except Exception as e:
+        print("❌ Error in /api/users:", e)
+        return jsonify({'message': 'Server error fetching users'}), 500
 
 
 # ✅ Register User
@@ -100,34 +97,55 @@ def get_users():
 def register():
     data = request.get_json()
     username = data.get('username').lower()
-    name = data.get('fullName')  # ✅ React sends fullName
-    email = data.get('email')
+    name = data.get('fullName')
+    email = data.get('email').lower()
     phone = data.get('phone')
-    dob_str = data.get('dob')    # Expecting YYYY-MM-DD
+    dob_str = data.get('dob')
     password = data.get('password')
 
-    # Handle DOB safely
+    # Safely parse DOB and calculate age
     dob = None
+    age = None
     if dob_str:
         try:
             dob = datetime.datetime.strptime(dob_str, "%Y-%m-%d").date()
+            today = datetime.date.today()
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
         except ValueError:
             return jsonify({'message': 'Invalid date format'}), 400
 
-    # Check for duplicate username or email
-    if User.query.filter(db.func.lower(User.username) == username).first():
+    # Generate unique ID (USR_###)
+    last_user = User.query.order_by(User.id.desc()).first()
+    if last_user and last_user.id.startswith("USR_"):
+        next_id = f"USR_{int(last_user.id.split('_')[1]) + 1:03}"
+    else:
+        next_id = "USR_001"
+
+    # Check for duplicates
+    if User.query.filter(func.lower(User.username) == username).first():
         return jsonify({'message': 'Username already exists'}), 409
-    if User.query.filter_by(email=email).first():
+    if User.query.filter(func.lower(User.email) == email).first():
         return jsonify({'message': 'Email already exists'}), 409
 
     hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
 
+    # Defaults for new users
+    default_location = "4.38284661761217, 100.97441771522674"
+    lat, lon = map(float, default_location.split(", "))
+
     new_user = User(
+        id=next_id,
         username=username,
         name=name,
         email=email,
         phone=phone,
         dob=dob,
+        age=age,
+        gender="M",  # 👈 Default gender
+        location=default_location,
+        latitude=lat,
+        longitude=lon,
+        last_login=None,
         password=hashed_pw
     )
 
@@ -137,7 +155,7 @@ def register():
         return jsonify({'message': 'User registered successfully'}), 201
     except Exception as e:
         db.session.rollback()
-        print("Registration error:", e)
+        print("❌ Registration error:", e)
         return jsonify({'message': 'Server error during registration'}), 500
 
 
