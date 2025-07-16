@@ -38,14 +38,21 @@ meal_times = load_json('meal_times.json')
 
 # --- User Model ---
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(20), primary_key=True)  # USR_001 etc.
     username = db.Column(db.String(80), unique=True, nullable=False)
-    name = db.Column(db.String(120), nullable=False)  # 👈 Full name
+    name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=True)   # 👈 Phone number
-    dob = db.Column(db.Date, nullable=True)           # 👈 Date of birth
+    phone = db.Column(db.String(20), nullable=True)
+    dob = db.Column(db.Date, nullable=True)
+    age = db.Column(db.Integer, nullable=True)
+    gender = db.Column(db.String(10), nullable=True)
+    location = db.Column(db.String(120), nullable=True)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    last_login = db.Column(db.DateTime, nullable=True)
     password = db.Column(db.String(120), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
 
 # Create tables if they don’t exist
 with app.app_context():
@@ -65,7 +72,8 @@ def get_users():
         user_data = {
             'username': user.username,
             'name': user.name,
-            'email': user.email
+            'email': user.email,
+            'dob' : user.dob
         }
 
         # Find matching JSON entry by username
