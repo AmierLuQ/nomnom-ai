@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Removed useRef
+import React, { useState, useEffect, useRef } from "react"; // Added useRef back as it's needed for nameRef
 import "../styles/HomePage.css";
 import {
   FaTimes,
@@ -21,6 +21,8 @@ export default function HomePage() {
   const [restaurants, setRestaurants] = useState([]); // Store all restaurants
   const [currentIndex, setCurrentIndex] = useState(0); // Track current index
   const [showDetails, setShowDetails] = useState(false);
+  const nameRef = useRef(null); // useRef is needed for the name length check
+  const [longName, setLongName] = useState(false); // State for long name
 
   useEffect(() => {
     fetch("https://nomnom-ai.onrender.com/api/restaurants")
@@ -31,14 +33,29 @@ export default function HomePage() {
       .catch((err) => console.error("API fetch error:", err));
   }, []);
 
-  if (!restaurants.length) return <p className="loading">Loading...</p>;
-
+  // Derive the current restaurant based on restaurants array and currentIndex
   const restaurant = restaurants[currentIndex];
+
+  // Effect to check if the restaurant name is too long
+  useEffect(() => {
+    if (nameRef.current && restaurant) {
+      const computedStyle = getComputedStyle(nameRef.current);
+      const lineHeight = parseFloat(computedStyle.lineHeight);
+      const height = nameRef.current.offsetHeight;
+      const lines = Math.round(height / lineHeight);
+      setLongName(lines > 1);
+    }
+  }, [restaurant]); // Re-run when the current restaurant changes
+
+  // Conditional render for loading state - must be after all hooks
+  if (!restaurant) {
+    return <p className="loading">Loading...</p>;
+  }
 
   // Function to toggle details view
   const toggleDetails = (e) => {
     if (e) e.stopPropagation(); // Prevent any parent click issues
-    setShowDetails(prev => !prev);
+    setShowDetails((prev) => !prev);
   };
 
   const handleSkip = (e) => {
@@ -67,7 +84,6 @@ export default function HomePage() {
     handleSkip(); // Move to next restaurant after 'eating'
   };
 
-
   const getStars = (rating) => {
     const roundedRating = Math.round(rating * 2) / 2; // Round to nearest 0.5
     const fullStars = Math.floor(roundedRating);
@@ -87,22 +103,57 @@ export default function HomePage() {
     return `RM ${cleanMin}-${cleanMax}`;
   }
 
-  // Determine current opening status
-  const getOpenStatus = (openingHours) => {
-    if (!openingHours) return { status: 'Unknown', isOpen: false };
+  // Determine current opening status based on actual opening/closing times
+  const getOpenStatus = (openingHours, closingHours) => {
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, etc.
+    const currentTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes
 
-    // Simple heuristic: if "Closed" is in the string
-    if (openingHours.toLowerCase().includes("closed")) {
+    if (!openingHours || !closingHours) return { status: 'Unknown', isOpen: false };
+
+    // Assuming openingHours and closingHours are in 'HH:MM:SS' format
+    const [openHour, openMinute] = openingHours.split(':').map(Number);
+    const [closeHour, closeMinute] = closingHours.split(':').map(Number);
+
+    let openTimeInMinutes = openHour * 60 + openMinute;
+    let closeTimeInMinutes = closeHour * 60 + closeMinute;
+
+    // Handle cases where closing time is on the next day (e.g., 10 PM - 2 AM)
+    if (closeTimeInMinutes < openTimeInMinutes) {
+      // If current time is past midnight but before closing time (e.g., 00:00 to 02:00 for a 10 PM - 2 AM place)
+      if (currentTime >= 0 && currentTime < closeTimeInMinutes) {
+        return { status: 'Open', isOpen: true };
+      }
+      // If current time is after opening time until midnight (e.g., 22:00 to 23:59 for a 10 PM - 2 AM place)
+      if (currentTime >= openTimeInMinutes && currentTime <= 24 * 60) {
+        return { status: 'Open', isOpen: true };
+      }
+      return { status: 'Closed', isOpen: false };
+    } else {
+      // Normal opening hours within the same day
+      if (currentTime >= openTimeInMinutes && currentTime < closeTimeInMinutes) {
+        return { status: 'Open', isOpen: true };
+      }
       return { status: 'Closed', isOpen: false };
     }
-
-    // For more robust checking, you'd parse current time against opening hours.
-    // For now, assume "Open" if not explicitly "Closed"
-    return { status: 'Open', isOpen: true };
   };
 
-  const { status: openStatus, isOpen: isRestaurantOpen } = getOpenStatus(restaurant["Opening Hours"]);
 
+  const { status: openStatus, isOpen: isRestaurantOpen } = getOpenStatus(
+    restaurant["Opening Time"],
+    restaurant["Closing Time"]
+  );
+
+  const getMapUrl = (latitude, longitude) => {
+    if (latitude && longitude) {
+      // Google Maps embed URL
+      return `https://www.google.com/maps/embed/v1/place?key=YOUR_Maps_API_KEY&q=${latitude},${longitude}`;
+      // Note: Replace 'YOUR_Maps_API_KEY' with your actual API key
+    }
+    return null;
+  };
+
+  const mapUrl = getMapUrl(restaurant.Latitude, restaurant.Longitude);
 
   return (
     <div className="home-container">
@@ -116,9 +167,7 @@ export default function HomePage() {
       </header>
 
       {/* Image Box */}
-      <div
-        className={`home-image-box ${showDetails ? "expanded" : ""}`}
-      >
+      <div className={`home-image-box ${showDetails ? "expanded" : ""}`}>
         <img
           src={`/images/${restaurant.ID.toLowerCase()}.png`}
           alt={restaurant.Name}
@@ -132,7 +181,12 @@ export default function HomePage() {
           <div className="home-top-info-container">
             {/* Name & Rating */}
             <div className="home-name-rating-container">
-              <h2 className="home-restaurant-name">{restaurant.Name}</h2>
+              <h2
+                ref={nameRef}
+                className={`home-restaurant-name ${longName ? "long-name" : ""}`}
+              >
+                {restaurant.Name}
+              </h2>
               <p className="home-restaurant-rating">
                 {Number(restaurant["Google Rating"] || 0).toFixed(1)}{" "}
                 {getStars(Number(restaurant["Google Rating"] || 0))}
@@ -162,13 +216,30 @@ export default function HomePage() {
 
           {/* Description Box (shown when expanded) */}
           <div className={`home-details-container ${showDetails ? "show" : ""}`}>
-            {/* Map Placeholder */}
-            <div className="home-map-placeholder">
-              <FaMapMarkerAlt size={24} /> <p>Map Placeholder</p>
-            </div>
+            {/* Map Section */}
+            {mapUrl ? (
+              <div className="home-map-container">
+                <iframe
+                  title="Google Map"
+                  src={mapUrl}
+                  width="100%"
+                  height="150"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
+              </div>
+            ) : (
+              <div className="home-map-placeholder">
+                <FaMapMarkerAlt size={24} /> <p>Map Not Available</p>
+              </div>
+            )}
+
             <div className="home-info-row">
               <FaMapMarkerAlt size={14} />{" "}
-              <span>{restaurant.Location || "No address provided."}</span>
+              {/* Use restaurant.Address for more detailed address if available */}
+              <span>{restaurant.Address || "No address provided."}</span>
             </div>
             <div className="home-info-row">
               <FaRegStickyNote size={14} />{" "}
@@ -184,7 +255,9 @@ export default function HomePage() {
                 >
                   {openStatus}
                 </span>{" "}
-                • {restaurant["Opening Hours"] || "10:00 AM - 10:00 PM"}
+                • {restaurant["Opening Time"] && restaurant["Closing Time"]
+                    ? `${restaurant["Opening Time"].substring(0, 5)} - ${restaurant["Closing Time"].substring(0, 5)}`
+                    : "Hours unknown."}
               </span>
             </div>
             <div className="home-info-row">
@@ -199,10 +272,9 @@ export default function HomePage() {
             </div>
             <div className="home-info-row">
               <FaPhone size={14} />{" "}
-              <span>{restaurant.Phone || "No phone number provided."}</span>
+              <span>{restaurant["Phone No."] || "No phone number provided."}</span>
             </div>
           </div>
-
 
           {/* Bottom Fixed Buttons */}
           <div className="home-bottom-fixed">

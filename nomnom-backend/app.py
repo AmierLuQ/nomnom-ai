@@ -37,7 +37,10 @@ meal_times = load_json('meal_times.json')
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)  # 👈 Full name
     email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)   # 👈 Phone number
+    dob = db.Column(db.Date, nullable=True)           # 👈 Date of birth
     password = db.Column(db.String(120), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -52,27 +55,49 @@ with app.app_context():
 def register():
     data = request.get_json()
     username = data.get('username')
+    name = data.get('fullName')  # 👈 Get full name
     email = data.get('email')
+    phone = data.get('phone')    # 👈 Get phone
+    dob_str = data.get('dob')    # 👈 Get dob as string (e.g., "2025-07-16")
     password = data.get('password')
 
+    # Parse DOB string to date object
+    dob = None
+    if dob_str:
+        dob = datetime.datetime.strptime(dob_str, "%Y-%m-%d").date()
+
+    # Check if user exists
+    if User.query.filter_by(username=username).first():
+        return jsonify({'message': 'Username already registered'}), 409
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already registered'}), 409
 
+    # Hash password
     hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
-    new_user = User(username=username, email=email, password=hashed_pw)
+
+    # Create new user
+    new_user = User(
+        username=username,
+        name=name,
+        email=email,
+        phone=phone,
+        dob=dob,
+        password=hashed_pw
+    )
     db.session.add(new_user)
     db.session.commit()
 
     return jsonify({'message': 'User registered successfully'}), 201
 
+
 # ✅ Login User
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data.get('email')
+    username = data.get('username')  # <-- Use username
     password = data.get('password')
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(username=username).first()
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity=str(user.id))
         return jsonify({
@@ -80,6 +105,7 @@ def login():
             'username': user.username
         }), 200
     return jsonify({'message': 'Invalid credentials'}), 401
+
 
 # ✅ Get All Restaurants
 @app.route('/api/restaurants', methods=['GET'])

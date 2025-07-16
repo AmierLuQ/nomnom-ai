@@ -9,12 +9,47 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [dob, setDob] = useState(null);
+  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const togglePassword = () => setShowPassword(!showPassword);
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    console.log("Registering account...");
+    setError(""); // Clear previous errors
+
+    try {
+      const response = await fetch("https://your-backend.onrender.com/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          fullName: fullName,
+          email: email,
+          phone: phone,
+          dob: dob ? dob.toISOString().split("T")[0] : null, // Format DOB YYYY-MM-DD
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Registration successful! You can now log in.");
+        navigate("/login"); // Redirect to login page
+      } else {
+        setError(data.message || "Registration failed. Try again.");
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError("Something went wrong. Please try again later.");
+    }
   };
 
   return (
@@ -31,6 +66,9 @@ export default function RegisterPage() {
         <h2 className="register-form-title">Register.</h2>
         <p className="register-form-subtitle">Create a new account.</p>
 
+        {/* Error Message */}
+        {error && <div className="register-error-message">{error}</div>}
+
         <form className="register-form" onSubmit={handleRegister}>
           {/* Username Field */}
           <div className="register-form-input-group">
@@ -40,6 +78,8 @@ export default function RegisterPage() {
               placeholder="Enter Username"
               className="register-form-input"
               required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
 
@@ -51,6 +91,8 @@ export default function RegisterPage() {
               placeholder="Enter Full Name"
               className="register-form-input"
               required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
             />
           </div>
 
@@ -62,6 +104,8 @@ export default function RegisterPage() {
               placeholder="Enter Email"
               className="register-form-input"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
@@ -74,6 +118,8 @@ export default function RegisterPage() {
                 placeholder="Enter Password"
                 className="register-form-input"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
@@ -109,6 +155,8 @@ export default function RegisterPage() {
               placeholder="Enter Phone No."
               className="register-form-input"
               required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
             />
           </div>
 

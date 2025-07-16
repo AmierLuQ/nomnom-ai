@@ -102,15 +102,16 @@
 .home-top-info-container {
   display: flex;
   position-anchor: top;
-  margin-top: 400px; /* Kept your revised margin */
+  margin-top: auto; /* Kept your revised margin */
   flex-direction: column;
   width: 100%; /* Take full width within padding */
+  transform: translateY(-100px);
   pointer-events: auto; 
-  transition: margin-top 0.4s ease-in-out;
+  transition: transform 0.4s ease-in-out;
 }
 
 .home-image-box.expanded .home-top-info-container {
-  margin-top: -8px;
+  transform: translateY(-500px);
 }
 
 .home-name-rating-container {
@@ -118,7 +119,7 @@
   justify-content: space-between;
   align-items: flex-end; /* Vertically anchor name to the bottom of its line */
   width: 100%;
-  margin-bottom: 0px; /* Kept your revised margin */
+  margin-bottom: -10px; /* Kept your revised margin */
 }
 
 .home-image-box.expanded .home-name-rating-container {
@@ -160,7 +161,7 @@
   gap: 10px; /* Space between pills */
   width: 100%; /* Take full width within padding */
   margin-bottom: 32px; /* Kept your revised margin */
-  margin-top: px; /* Kept your revised margin */
+  margin-top: 0px; /* Kept your revised margin */
   justify-content: space-between; /* Distribute pills evenly */
 
 }

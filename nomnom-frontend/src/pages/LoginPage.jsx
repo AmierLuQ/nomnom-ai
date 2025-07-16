@@ -6,21 +6,50 @@ import "../styles/LoginPage.css";
 export default function LoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState(""); // Track username
+  const [password, setPassword] = useState(""); // Track password
+  const [error, setError] = useState("");       // Track error messages
 
   const togglePassword = () => setShowPassword(!showPassword);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Logging in...");
+    setError(""); // Clear previous errors
+
+    try {
+      const response = await fetch("https://your-backend.onrender.com/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username, // Send username
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Save JWT token + username to localStorage
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("username", data.username);
+
+        // Redirect to home page
+        navigate("/home");
+      } else {
+        setError(data.message || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Something went wrong. Please try again later.");
+    }
   };
 
   return (
     <div className="login-auth-container">
       {/* Potato Button */}
-      <button
-        className="login-potato-button"
-        onClick={() => navigate("/home")}
-      >
+      <button className="login-potato-button" onClick={() => navigate("/home")}>
         Potato
       </button>
 
@@ -36,6 +65,9 @@ export default function LoginPage() {
         <h2 className="login-form-title">Login.</h2>
         <p className="login-form-subtitle">Sign in to continue.</p>
 
+        {/* Error Message */}
+        {error && <div className="login-error-message">{error}</div>}
+
         <form className="login-form" onSubmit={handleLogin}>
           {/* Username Field */}
           <div className="login-form-input-group">
@@ -45,6 +77,8 @@ export default function LoginPage() {
               placeholder="Enter Username"
               className="login-form-input"
               required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
 
@@ -57,6 +91,8 @@ export default function LoginPage() {
                 placeholder="Enter Password"
                 className="login-form-input"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
