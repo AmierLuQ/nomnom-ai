@@ -1,0 +1,38 @@
+[
+  {
+    "Name of Meal": "Suhoor",
+    "Time Range": "4:00 AM - 7:00 AM"
+  },
+  {
+    "Name of Meal": "Breakfast",
+    "Time Range": "7:00 AM - 10:00 AM"
+  },
+  {
+    "Name of Meal": "Brunch",
+    "Time Range": "10:00 AM - 12:00 PM"
+  },
+  {
+    "Name of Meal": "Lunch",
+    "Time Range": "12:00 PM - 4:00 PM"
+  },
+  {
+    "Name of Meal": "Tea Time",
+    "Time Range": "4:00 PM - 5:30 PM"
+  },
+  {
+    "Name of Meal": "Linner",
+    "Time Range": "5:30 PM - 7:30 PM"
+  },
+  {
+    "Name of Meal": "Dinner",
+    "Time Range": "7:30 PM - 10:00 PM"
+  },
+  {
+    "Name of Meal": "Late Dinner",
+    "Time Range": "10:00 PM - 11:30 PM"
+  },
+  {
+    "Name of Meal": "Midnight Snack",
+    "Time Range": "11:30 PM - 2:00 AM"
+  }
+]

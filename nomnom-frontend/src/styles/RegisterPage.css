@@ -1,54 +1,54 @@
 /* ==================== Base Container ==================== */
-.auth-container {
+.register-auth-container {
   background-image: linear-gradient(#011627, #010813, #010813);
-  min-height: 100vh;
+  min-height: 932px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-x: hidden; /* Prevent swiping left */
+  overflow-x: hidden;
+  position: relative;
 }
 
 /* ==================== Logo Section ==================== */
-.logo-section {
-  margin-top: 12vh;
-  margin-bottom: 12vh;
+.register-logo-section {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.logo-img {
-  margin-top: 4vh;
-  margin-bottom: 4vh;
-  width: 72%;
+.register-logo-img {
+  margin-top: 24px;
+  margin-bottom: 24px;
+  width: 280px;
   max-width: 280px;
-  height: auto;
+  height: 274px;
 }
 
 /* ==================== Form Container ==================== */
-.form-container {
-  background-image: linear-gradient(#41ead4, #41ead4bb);
-  width: 100%;
-  height: auto;
-  position: right;
+.register-form-container {
+  background-image: linear-gradient(#41ead4dd, #41ead4bb);
+  max-width: 390px;
+  width: 390px;
+  min-height: calc(100vh - 356px);
   border-top-right-radius: 100px;
   border-top-left-radius: 0;
   margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 12px 20px;
 }
 
 /* ==================== Form Header ==================== */
-.form-title {
+.register-form-title {
   font-family: "Inter Bold", sans-serif;
-  font-size: 42px;
+  font-size: 40px;
   text-align: center;
   color: #011627;
-  margin-bottom: 0px;
+  margin-bottom: -8px;
 }
 
-.form-subtitle {
+.register-form-subtitle {
   font-family: "DM Sans", sans-serif;
   font-size: 14px;
   text-align: center;
@@ -61,76 +61,55 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.form-input-group {
   width: 100%;
-  margin-bottom: 12px;
 }
 
-.form-label {
-  font-family: "Inter", sans-serif;
+.register-form-input-group {
+  width: 280px;
+  margin-bottom: 8px;
+  transform: translateX(-10px);
+}
+
+.register-form-label{
+  font-family: "Inter Bold", sans-serif;
   font-size: 12px;
   font-weight: bold;
   color: #FC3B48;
-  margin: 10px 0 2px;
   display: block;
-}
-
-.form-label-date {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: bold;
-  color: #FC3B48;
-  margin: 10px 0 2px;
-  display: block;
-  transform: translateX(-101%);
-}
-
-/* Responsive tweak for date label */
-@media (min-width: 600px) {
-  .form-label-date {
-    transform: translateX(-91%);
-  }
 }
 
 /* ==================== Input Fields ==================== */
-.form-input {
+.register-form-input {
   background-color: #011627;
   color: #FDFFFC;
   border: none;
-  width: 150%;
   border-radius: 10px;
-  padding: 12px 10px;
+  min-width: 100%;
   font-size: 14px;
   font-family: "DM Sans", sans-serif;
-  display: block;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  padding: 10px 0px 10px 20px;
 }
 
-.form-input[type="date"] {
-  color: #75756b; /* Slight opacity */
-  font-size: 14px;
-  font-family: "DM Sans", sans-serif;
+.register-form-input.date {
+  min-width: 280px;
 }
 
-.form-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1); /* Inverts black icon to white */
-  cursor: pointer;
-}
-
-.password-field {
+.register-password-field {
   position: relative;
   width: 100%;
 }
 
-.toggle-btn {
+.register-toggle-btn {
   position: absolute;
   right: -10px;
-  top: 52%;
+  top: 26px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
+  transform: translateY(-10px);
 }
 
 /* ==================== Buttons ==================== */
@@ -141,12 +120,12 @@
   border: none;
   border-radius: 10px;
   padding: 12px 0;
-  width: 100%;
-  max-width: 292px;
+  width: 180px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 15px;
+  margin-top: 16px;
+  margin-bottom: 24px;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
@@ -161,7 +140,7 @@
   text-align: center;
   color: #FDFFFC;
   font-size: 12px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .register-link {
@@ -173,12 +152,12 @@
 }
 
 /* ==================== Footer ==================== */
-.form-footer {
+.register-form-footer {
   font-family: "DM Sans", sans-serif;
   margin-top: 32px;
   margin-bottom: 80px;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #FDFFFC;
   opacity: 0.5;
 }

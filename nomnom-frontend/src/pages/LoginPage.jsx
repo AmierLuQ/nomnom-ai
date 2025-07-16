@@ -15,10 +15,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-container">
+    <div className="login-auth-container">
       {/* Potato Button */}
       <button
-        className="potato-button"
+        className="login-potato-button"
         onClick={() => navigate("/home")}
       >
         Potato
@@ -28,39 +28,39 @@ export default function LoginPage() {
       <img
         src="/nomnom-ai-text-logo.PNG"
         alt="NomNom AI Logo"
-        className="logo-img"
+        className="login-logo-img"
       />
 
       {/* Form Container */}
-      <div className="form-container">
-        <h2 className="form-title">Login.</h2>
-        <p className="form-subtitle">Sign in to continue.</p>
+      <div className="login-form-container">
+        <h2 className="login-form-title">Login.</h2>
+        <p className="login-form-subtitle">Sign in to continue.</p>
 
         <form className="login-form" onSubmit={handleLogin}>
           {/* Username Field */}
-          <div className="form-input-group">
-            <label className="form-label">USERNAME</label>
+          <div className="login-form-input-group">
+            <label className="login-form-label">USERNAME</label>
             <input
               type="text"
               placeholder="Enter Username"
-              className="form-input"
+              className="login-form-input"
               required
             />
           </div>
 
           {/* Password Field */}
-          <div className="form-input-group">
-            <label className="form-label">PASSWORD</label>
-            <div className="password-field">
+          <div className="login-form-input-group">
+            <label className="login-form-label">PASSWORD</label>
+            <div className="login-password-field">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter Password"
-                className="form-input"
+                className="login-form-input"
                 required
               />
               <button
                 type="button"
-                className="toggle-btn"
+                className="login-toggle-btn"
                 onClick={togglePassword}
               >
                 {showPassword ? (
@@ -78,21 +78,21 @@ export default function LoginPage() {
         </form>
 
         <button
-          className="forgot-link"
+          className="login-forgot-link"
           onClick={() => alert("Forgot Password placeholder")}
         >
           Forgot Password?
         </button>
-        <p className="register-text">
+        <p className="login-register-text">
           Don’t have an account?{" "}
           <span
-            className="register-link"
+            className="login-register-link"
             onClick={() => navigate("/register")}
           >
             Register Here
           </span>
         </p>
-        <footer className="form-footer">
+        <footer className="login-form-footer">
           © {new Date().getFullYear()} NomNom AI. All rights reserved.
         </footer>
       </div>

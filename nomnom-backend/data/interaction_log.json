@@ -1,0 +1,46 @@
+[
+  {
+    "ID": "LOG_001_001_A",
+    "User ID": "USR_001",
+    "Recommendation Rank": "1",
+    "Restaurant ID": "RST_001",
+    "User Action": "decline",
+    "Timestamp": "2025-06-20 21:00:00",
+    "Swipe Time (Sec)": "3",
+    "Final Ordered": "FALSE",
+    "User Feedback": ""
+  },
+  {
+    "ID": "LOG_001_001_B",
+    "User ID": "USR_001",
+    "Recommendation Rank": "2",
+    "Restaurant ID": "RST_004",
+    "User Action": "decline",
+    "Timestamp": "2025-06-20 21:00:04",
+    "Swipe Time (Sec)": "4",
+    "Final Ordered": "FALSE",
+    "User Feedback": ""
+  },
+  {
+    "ID": "LOG_001_001_C",
+    "User ID": "USR_001",
+    "Recommendation Rank": "3",
+    "Restaurant ID": "RST_003",
+    "User Action": "decline",
+    "Timestamp": "2025-06-20 21:00:11",
+    "Swipe Time (Sec)": "7",
+    "Final Ordered": "FALSE",
+    "User Feedback": ""
+  },
+  {
+    "ID": "LOG_001_001_D",
+    "User ID": "USR_001",
+    "Recommendation Rank": "4",
+    "Restaurant ID": "RST_002",
+    "User Action": "accept",
+    "Timestamp": "2025-06-20 21:00:16",
+    "Swipe Time (Sec)": "5",
+    "Final Ordered": "TRUE",
+    "User Feedback": ""
+  }
+]

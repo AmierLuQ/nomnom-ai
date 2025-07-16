@@ -18,67 +18,66 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="auth-container">
+    <div className="register-auth-container">
       {/* Logo Section */}
       <img
         src="/nomnom-ai-text-logo.PNG"
         alt="NomNom AI Logo"
-        className="logo-img"
+        className="register-logo-img"
       />
 
-
       {/* Form Container */}
-      <div className="form-container">
-        <h2 className="form-title">Register.</h2>
-        <p className="form-subtitle">Create a new account.</p>
+      <div className="register-form-container">
+        <h2 className="register-form-title">Register.</h2>
+        <p className="register-form-subtitle">Create a new account.</p>
 
         <form className="register-form" onSubmit={handleRegister}>
-          {/* Userame Field */}
-          <div className="form-input-group">
-            <label className="form-label">USERNAME</label>
+          {/* Username Field */}
+          <div className="register-form-input-group">
+            <label className="register-form-label">USERNAME</label>
             <input
               type="text"
               placeholder="Enter Username"
-              className="form-input"
+              className="register-form-input"
               required
             />
           </div>
 
           {/* Name Field */}
-          <div className="form-input-group">
-            <label className="form-label">FULL NAME</label>
+          <div className="register-form-input-group">
+            <label className="register-form-label">FULL NAME</label>
             <input
               type="text"
               placeholder="Enter Full Name"
-              className="form-input"
+              className="register-form-input"
               required
             />
           </div>
 
           {/* Email Field */}
-          <div className="form-input-group">
-            <label className="form-label">EMAIL</label>
+          <div className="register-form-input-group">
+            <label className="register-form-label">EMAIL</label>
             <input
               type="email"
               placeholder="Enter Email"
-              className="form-input"
+              className="register-form-input"
               required
             />
           </div>
 
           {/* Password Field */}
-          <div className="form-input-group">
-            <label className="form-label">PASSWORD</label>
-            <div className="password-field">
+          <div className="register-form-input-group">
+            <label className="register-form-label">PASSWORD</label>
+            <div className="register-password-field">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter Password"
-                className="form-input"
+                className="register-form-input"
                 required
               />
               <button
                 type="button"
-                className="toggle-btn"
+                className="register-toggle-btn"
                 onClick={togglePassword}
               >
                 {showPassword ? (
@@ -91,21 +90,24 @@ export default function RegisterPage() {
           </div>
 
           {/* Date of Birth Field */}
-          <label className="form-label-date">DATE OF BIRTH</label>
-          <DatePicker
-  selected={dob}
-  onChange={(date) => setDob(date)}
-  placeholderText="dd/mm/yyyy"
-  className="form-input"
-/>
+          <div className="register-form-input-group">
+            <label className="register-form-label">DATE OF BIRTH</label>
+            <DatePicker
+              selected={dob}
+              onChange={(date) => setDob(date)}
+              placeholderText="dd/mm/yyyy"
+              className="register-form-input date"
+              required
+            />
+          </div>
 
           {/* Phone Field */}
-          <div className="form-input-group">
-            <label className="form-label">PHONE NO.</label>
+          <div className="register-form-input-group">
+            <label className="register-form-label">PHONE NO.</label>
             <input
               type="tel"
               placeholder="Enter Phone No."
-              className="form-input"
+              className="register-form-input"
               required
             />
           </div>
@@ -124,7 +126,7 @@ export default function RegisterPage() {
             Login here.
           </span>
         </p>
-        <footer className="form-footer">
+        <footer className="register-form-footer">
           © {new Date().getFullYear()} NomNom AI. All rights reserved.
         </footer>
       </div>

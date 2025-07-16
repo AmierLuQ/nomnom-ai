@@ -8,6 +8,7 @@
   color: #FDFFFC;
   font-family: "DM Sans", sans-serif;
   text-align: center;
+  overflow: hidden; /* Prevent horizontal scroll from swipe animations */
 }
 
 /* ==================== Header ==================== */
@@ -15,252 +16,345 @@
   width: 100%;
   margin-top: 10px;
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center; /* Center the logo */
 }
+
 .home-logo {
   width: auto;
   height: 7vh;
+  object-fit: contain; /* Ensure logo fits without stretching */
 }
 
 /* ==================== Image Box ==================== */
-.image-box {
+.home-image-box {
   position: relative;
-  width: 100vw;
+  width: 430px; /* Kept your revised fixed width */
+  max-width: 430px; /* Laptop max width */
+  max-height: 645px;
   aspect-ratio: 2 / 3;
-  max-width: 512px;
   border-radius: 25px;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  display: flex; /* For positioning internal elements */
+  flex-direction: column;
+  justify-content: flex-end; /* Initial state: content at bottom */
+  transition: all 0.5s ease-in-out; /* Smooth transition for expansion */
+  flex-grow: 1; /* Allow image box to grow and fill space */
 }
-.restaurant-image {
+
+/* Expanded state for image box */
+.home-image-box.expanded {
+  flex-grow: 1; /* Ensure it takes full height available */
+  justify-content: flex-start; /* Move content to top */
+  /* We'll handle description overflow internally now, not on image-box */
+}
+
+.home-restaurant-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 1; /* Below content and gradient */
 }
-.image-gradient {
+
+.home-image-gradient {
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 33%;
+  height: 33%; /* 1/3 of the image */
   background: linear-gradient(to top, #011627e6, #011627b3, #01162700);
-  transition: height 0.3s ease;
+  z-index: 2; /* Above image, below content */
+  transition: height 0.5s ease-in-out, background 0.8s ease-in-out; /* Added background transition */
 }
 
-.image-box.expanded .image-gradient {
-  height: 100%; /* cover whole image when expanded */
+.home-image-box.expanded .home-image-gradient {
+  height: 120%; /* Cover whole image when expanded */
+  background: linear-gradient(to top, #011627e6, #011627b3, #01162786, #01162700);
 }
 
 /* ==================== Content Overlay ==================== */
-.image-content {
-  position: absolute;
-  bottom: 0;
-  top: 0; /* anchor to top */
-  width: 100%;
-  height: 100%; /* fill entire image */
-  padding: 20px;
+.home-image-content {
+  position: relative; /* Relative for positioning .home-details-container */
+  z-index: 3; /* Above gradient and image */
+  padding: 20px; /* Padding on all sides */
+  padding-bottom: 8px; /* Kept your revised padding */
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* default view = anchored to bottom */
-  transition: justify-content 0.3s ease;
-  transform: translateY(-40px);
+  /justify-content: flex-end; /* Initial: content at bottom */
+  align-items: center; /* Center horizontally for initial state */
+  height: 100%; /* Take full height of parent */
+  width: 100%; /* Take full width of parent */
+  box-sizing: border-box; /* Include padding in width/height */
+  pointer-events: none; /* Allow clicks to pass through to underlying elements if nothing specific is here */
+  overflow: hidden; /* Prevent text/content from spilling during transitions */
 }
-.name-rating-container {
-  margin-top: 20px;
-  max-width: calc(100% - 40px);
+
+.home-image-box.expanded .home-image-content {
+  justify-content: space-between; /* Expanded: content at top */
+  align-items: flex-start; /* Align to left within padding */
+  overflow-y: hidden; /* Enable scrolling for details */
+}
+
+/* Group for name + tags (initial state) */
+.home-top-info-container {
+  display: flex;
+  position-anchor: top;
+  margin-top: 400px; /* Kept your revised margin */
+  flex-direction: column;
+  width: 100%; /* Take full width within padding */
+  pointer-events: auto; 
+  transition: margin-top 0.4s ease-in-out;
+}
+
+.home-image-box.expanded .home-top-info-container {
+  margin-top: -8px;
+}
+
+.home-name-rating-container {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: flex-end; /* Vertically anchor name to the bottom of its line */
+  width: 100%;
+  margin-bottom: 0px; /* Kept your revised margin */
 }
-.restaurant-name {
+
+.home-image-box.expanded .home-name-rating-container {
+  align-items: baseline; /* Align by text baseline */
+  
+}
+
+.home-restaurant-name {
   font-family: "Inter", sans-serif;
-  font-size: 140%;
+  font-size: 24px; /* Kept your revised font size */
   font-weight: bold;
-  max-width: 70%;
-  text-anchor: end;
   text-align: left;
+  flex-grow: 1; /* Allow name to take available space */
+  margin-right: 16px; /* Space between name and rating */
+  line-height: 1; /* Ensure line-height doesn't affect margin calc */
+  text-shadow: 0px 0px 4px #00000080;
 }
-.restaurant-rating {
+
+.home-restaurant-rating {
   font-family: "Inter", sans-serif;
-  font-size: 105%;
+  font-size: 14px; /* Kept your revised font size */
   font-weight: normal;
   text-align: right;
-}
-
-.pill-container {
-  max-width: 100%;
+  white-space: nowrap; /* Prevent wrapping for rating */
   display: flex;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-.pill-box {
-  color: #011627;
-  background-color: #FDFFFC; /* fallback color */
-  max-width: calc((100%-70px)/4);
-  font-family: "DM Sans", sans-serif;
-  font-weight: 800;
-  font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 999px;
-}
-.pill-box.tag {
-  background-color: #41EAD4;
-  color: #011627;
-}
-.pill-box.price {
-  background-color: #FF7E21;
-  color: #011627;
-}
-
-
-.button-group {
-  display: flex;
-  justify-content:space-evenly;
-  vertical-align: middle;
   align-items: center;
-  margin-top: 12px;
-  transform: translateX(-20px);
+  gap: 4px; /* Space between rating number and stars */
+  line-height: 32px; /* Ensure line-height doesn't affect margin calc */
+  text-shadow: 0px 0px 4px #00000080;
+}
+.home-restaurant-rating svg {
+  vertical-align: middle; /* Align stars nicely */
+}
+
+
+.home-pill-container {
+  display: flex;
+  flex-wrap: wrap; /* Allow pills to wrap to next line */
+  gap: 10px; /* Space between pills */
+  width: 100%; /* Take full width within padding */
+  margin-bottom: 32px; /* Kept your revised margin */
+  margin-top: px; /* Kept your revised margin */
+  justify-content: space-between; /* Distribute pills evenly */
+
+}
+
+.home-pill-box {
+  color: #011627;
+  background-color: #FDFFFC;
+  font-family: "DM Sans", sans-serif;
+  font-weight: bold; /* Bold as per requirement */
+  font-size: 10px; /* Kept your revised font size */
+  padding: 4px 12px;
+  border-radius: 999px; /* Pill shape */
+  white-space: nowrap; /* Prevent text wrapping inside pill */
+  flex-grow: 1; /* Allow pills to grow dynamically */
+  flex-basis: auto; /* Allow pills to determine their own base width */
+  text-align: center; /* Center text within pill */
+  min-width: 20px; /* Prevent pills from becoming too small */
+  box-sizing: border-box; /* Include padding in width */
+  height: fit-content; /* Ensure height fits content */
+}
+
+.home-pill-box.home-tag {
+  background-color: #41EAD4;
+}
+
+.home-pill-box.home-price {
+  background-color: #FF7E21;
+}
+
+/* Hide price pill in expanded view */
+.home-image-box.expanded .home-pill-box.home-price {
+  display: none;
+}
+
+
+/* ==================== Description View ==================== */
+.home-details-container {
+  /* Position absolute so it doesn't affect layout when hidden */
+  position: absolute;
+  top: 0; /* Will be pushed down by .home-top-info-container when expanded */
+  left: 20px; /* Matches left padding of home-image-content */
+  right: 20px; /* Matches right padding of home-image-content */
+  bottom: 8px; /* Space from bottom of image-content, adjusting for button area */
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(600px); /* Initial state: slightly off-screen for slide-in */
+  transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out, transform 0.4s ease-in-out;
+
+  display: flex; /* Keep flex for its internal layout */
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  color: #FDFFFC;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px; /* Kept your revised font size */
+  width: calc(100% - 40px); /* Adjust width for absolute positioning with padding */
+  max-height: 400px;
+  pointer-events: none; /* Default: no pointer events when hidden */
+  overflow-y: hidden; /* Allow scrolling within the details container itself */
+  box-sizing: border-box; /* Include padding in its dimensions */
+  top: 120px;
+}
+
+.home-details-container.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0); /* Move to final position */
+  pointer-events: auto; /* Enable pointer events when shown */
+}
+
+.home-map-placeholder {
+  width: 100%;
+  height: 180px;
+  background-color: rgba(1, 22, 39, 0.7); /* Darker background */
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column; /* Stack icon and text */
+  align-items: center;
+  justify-content: center;
+  color: #FDFFFC;
+  font-size: 14px; /* Slightly larger text for placeholder */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  margin-bottom: 10px; /* Space below map */
+}
+.home-map-placeholder p {
+  margin-top: 8px;
+}
+
+
+.home-info-row {
+  display: flex;
+  align-items: flex-start; /* Align icons and text at the top if text wraps */
+  gap: 16px;
+  font-size: 14px; /* Specific pixel size */
+  line-height: 1.4; /* Improve readability of text */
+}
+
+.home-info-row svg {
+  align-self: center;
+  width: 16px;
+  height: auto;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.home-info-row .home-status-open {
+  color: #4CAF50;
+  font-weight: bold;
+}
+.home-info-row .home-status-closed {
+  color: #FC3B48;
+  font-weight: bold;
+}
+
+
+/* ==================== Button Group & Swipe Indicator ==================== */
+.home-bottom-fixed {
+  width: 90%;
+  pointer-events: auto; /* Re-enable pointer events for buttons */
+  position: absolute; /* Keep buttons at the bottom when scrolling in expanded view */
+  bottom: 0;
+  padding: 0px; /* Kept your revised padding */
+}
+
+.home-button-group {
+  display: flex;
+  justify-content: space-between; /* Kept your revised spacing */
+  align-items: center;
   width: 100%;
 }
-.action-button {
+
+.home-action-button {
   background-color: #fdfffc;
   border: 4px solid;
   border-radius: 50%;
-  aspect-ratio: 1/1;
-  width: 14%;
-  height: 14%;
-  font-size: 160%;
+  width: 72px; /* Kept your revised size */
+  height: 72px; /* Kept your revised size */
+  font-size: 32px; /* Base icon size */
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s ease, transform 0.2s ease;
-  vertical-align: middle;
+  transition: background-color 0.3s ease, transform 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-.action-button.skip {
+
+/* Specific button styles */
+.home-action-button.home-skip {
   border-color: #FC3B48;
   color: #FC3B48;
-  aspect-ratio: 1/1;
-  width: 16%;
-  height: auto;
-  font-size: 240%;
+  width: 80px; /* Kept your revised size */
+  height: 80px; /* Kept your revised size */
+  font-size: 48px; /* Kept your revised size */
 }
-.action-button.undo {
+.home-action-button.home-undo {
   border-color: #41EAD4;
   color: #41EAD4;
-  aspect-ratio: 1/1;
-  height: auto;
 }
-.action-button.favorite {
-  border-color: #ff219b;
+.home-action-button.home-favorite {
+  border-color: #ff219b; /* Original pink from requirements */
   color: #ff219b;
-  aspect-ratio: 1/1;
-  height: auto;
 }
-.action-button.eat { border-color: #4CAF50;
-  color: #4CAF50; 
-  aspect-ratio: 1/1;
-  height: auto;
-  width: 16%;
-  font-size: 240%;
+.home-action-button.home-eat {
+  border-color: #4CAF50; /* Light green */
+  color: #4CAF50;
+  width: 80px; /* Kept your revised size */
+  height: 80px; /* Kept your revised size */
+  font-size: 40px; /* Kept your revised size */
 }
 
-.action-button:hover {
-  transform: scale(1.1);
-  background-color: rgba(255, 255, 255, 0.2);
+/* Hover/Active states */
+.home-action-button:hover,
+.home-action-button:active {
+  transform: scale(1.1); /* Scale up on hover/active */
+  filter: brightness(1.2); /* Tint effect */
 }
-.swipe-indicator {
-  margin-top: 0px;
-    font-size: 18px;
+
+/* Swipe Indicators */
+.home-swipe-indicator-bottom {
+  margin-top: 8px;
+  font-size: 24px;
   color: #FDFFFC;
-  transform: translate(-20px, 10px);
   opacity: 0.5;
+  cursor: pointer;
+  animation: bounce 1.5s infinite; /* Bopping animation */
+  pointer-events: auto;
 }
 
-/* =================== Description View =================== */
-.image-box.expanded .image-gradient {
-  height: 100%; /* cover whole image when expanded */
-}
-
-/* Expanded description container */
-.details-container {
-  display: none; /* Hidden by default */
-  flex-direction: column;
-  gap: 8px;
-  text-align: left;
-  color: #FDFFFC;
-  font-family: "DM Sans", sans-serif;
-  font-size: 10px;
-  padding-top: 10px;
-}
-
-.image-box.expanded .details-container {
-  display: flex; /* Show in expanded view */
-}
-
-/* Anchoring name, tags, description to top */
-.image-box.expanded .image-content {
-  background: linear-gradient(to top, #011627e6, #011627b3, #01162700);
-  justify-content: flex-start; /* expanded view = anchored to top */
-}
-
-.image-box.expanded .pill-container {
-  margin-bottom: 12px; /* Less space between tags and description */
-}
-
-.map-placeholder {
-  width: 90%;
-  height: 192px;
-  background-color: #011627;
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #FDFFFC;
-  font-family: "DM Sans", sans-serif;
-  font-size: 12px;
-  margin: 10px 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Styling individual info rows */
-.info-row {
-  color: #fdfffc;
-  font-family: "DM Sans", sans-serif;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.info-row .status-open {
-  color: #4CAF50; /* Green */
-  font-weight: bold;
-}
-
-.info-row .status-closed {
-  color: #FC3B48; /* Red */
-  font-weight: bold;
-}
-
-.name-rating-container,
-.pill-container,
-.details-container {
-  transition: all 0.3s ease;
-}
-
-
-
-/* ==================== Responsive Styles ==================== */
-
-/* Tablets and larger */
-@media (min-width: 600px) {
-  .restaurant-name {
-    font-size: 160%;
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
   }
-  .restaurant-rating {
-    font-size: 120%;
-  }
-  .pill-box {
-    padding: 4px 24px;
+  50% {
+    transform: translateY(-8px);
   }
 }
 
@@ -271,4 +365,5 @@
   font-size: 0.75rem;
   color: #FDFFFC;
   opacity: 0.5;
+  margin-bottom: 10px; /* Small margin at the bottom */
 }

@@ -1,54 +1,54 @@
 /* ==================== Base Container ==================== */
-.auth-container {
+.login-auth-container {
   background-image: linear-gradient(#011627, #010813, #010813);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-x: hidden; /* Prevent swiping left */
+  overflow-x: hidden;
+  position: relative;
 }
 
 /* ==================== Logo Section ==================== */
-.logo-section {
-  margin-top: 12vh;
-  margin-bottom: 12vh;
+.login-logo-section {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.logo-img {
-  margin-top: 4vh;
-  margin-bottom: 4vh;
-  width: 72%;
+.login-logo-img {
+  margin-top: 24px;
+  margin-bottom: 24px;
+  width: 280px;
   max-width: 280px;
-  height: auto;
+  height: 274px;
 }
 
 /* ==================== Form Container ==================== */
-.form-container {
-  background-image: linear-gradient(#41ead4d, #41ead4bb);
-  width: 100%;
-  height: autox;
-  position: right;
+.login-form-container {
+  background-image: linear-gradient(#41ead4dd, #41ead4bb);
+  max-width: 390px;
+  width: 390px;
+  min-height: calc(100vh - 356px) !important;
   border-top-right-radius: 100px;
   border-top-left-radius: 0;
   margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 12px 20px;
 }
 
 /* ==================== Form Header ==================== */
-.form-title {
+.login-form-title {
   font-family: "Inter Bold", sans-serif;
-  font-size: 42px;
+  font-size: 40px;
   text-align: center;
   color: #011627;
-  margin-bottom: 0px;
+  margin-bottom: -8px;
 }
 
-.form-subtitle {
+.login-form-subtitle {
   font-family: "DM Sans", sans-serif;
   font-size: 14px;
   text-align: center;
@@ -61,52 +61,51 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.form-input-group {
   width: 100%;
-  margin-bottom: 12px;
 }
 
-.form-label {
+.login-form-input-group {
+  width: 280px;
+  margin-bottom: 8px;
+  transform: translateX(-10px);
+}
+
+.login-form-label {
   font-family: "Inter Bold", sans-serif;
   font-size: 12px;
   font-weight: bold;
   color: #FC3B48;
-  margin: 10px 0 2px;
   display: block;
-  transform: translateX(-27%);
 }
 
 /* ==================== Input Fields ==================== */
-.form-input {
+.login-form-input {
   background-color: #011627;
   color: #FDFFFC;
   border: none;
-  width: 150%;
   border-radius: 10px;
-  padding: 12px 10px;
-  left: 10px;
+  width: 100%;
   font-size: 14px;
   font-family: "DM Sans", sans-serif;
-  display: block;
-  transform: translateX(-19%);
+  margin-top: 6px;
+  margin-bottom: 12px;
+  padding: 10px 0px 10px 20px;
 }
 
-.password-field {
+.login-password-field {
   position: relative;
   width: 100%;
 }
 
-.toggle-btn {
+.login-toggle-btn {
   position: absolute;
   right: -10px;
-  top: 52%;
+  top: 26px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  transform: translate(30px, -10px);
+  transform: translateY(-10px);
 }
 
 /* ==================== Buttons ==================== */
@@ -117,12 +116,12 @@
   border: none;
   border-radius: 10px;
   padding: 12px 0;
-  width: 100%;
-  max-width: 292px;
+  width: 180px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 15px;
+  margin-top: 16px;
+  margin-bottom: 24px;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
@@ -132,7 +131,7 @@
 }
 
 /* ==================== Links ==================== */
-.forgot-link {
+.login-forgot-link {
   font-family: "DM Sans Bold", sans-serif;
   display: block;
   text-align: center;
@@ -146,7 +145,7 @@
   border: none;
 }
 
-.register-text {
+.login-register-text {
   font-family: "DM Sans", sans-serif;
   text-align: center;
   color: #FDFFFC;
@@ -154,7 +153,7 @@
   margin-top: 8px;
 }
 
-.register-link {
+.login-register-link {
   font-family: "DM Sans Bold", sans-serif;
   color: #FDFFFC;
   font-weight: bold;
@@ -163,18 +162,18 @@
 }
 
 /* ==================== Footer ==================== */
-.form-footer {
+.login-form-footer {
   font-family: "DM Sans", sans-serif;
   margin-top: 32px;
   margin-bottom: 80px;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #FDFFFC;
   opacity: 0.5;
 }
 
 /* ================== Potato Button ================== */
-.potato-button {
+.login-potato-button {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -185,13 +184,14 @@
   border: none;
   border-radius: 8px;
   padding: 6px 12px;
-  font-size: 0.9rem;
+  font-size: 14px;
   cursor: pointer;
   z-index: 1000;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   transition: background 0.3s ease, transform 0.2s ease;
 }
-.potato-button:hover {
+
+.login-potato-button:hover {
   background-color: #FC3B48;
   transform: scale(1.05);
 }
