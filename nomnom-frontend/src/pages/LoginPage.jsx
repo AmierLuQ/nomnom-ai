@@ -17,7 +17,7 @@ export default function LoginPage() {
     setError(""); // Clear previous errors
 
     try {
-      const response = await fetch("https://your-backend.onrender.com/api/login", {
+      const response = await fetch("https://nomnom-ai.onrender.com/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   const handlePotatoLogin = async () => {
     try {
-      const response = await fetch("https://your-backend.onrender.com/api/login", {
+      const response = await fetch("https://nomnom-ai.onrender.com/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
