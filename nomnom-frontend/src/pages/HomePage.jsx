@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"; // Added useRef back as it's needed for nameRef
+import React, { useState, useEffect} from "react";
 import "../styles/HomePage.css";
 import {
   FaTimes,
@@ -16,41 +16,41 @@ import {
   FaMoneyBillWave,
   FaPhone,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
 
 export default function HomePage() {
   const [restaurants, setRestaurants] = useState([]); // Store all restaurants
   const [currentIndex, setCurrentIndex] = useState(0); // Track current index
   const [showDetails, setShowDetails] = useState(false);
-  const nameRef = useRef(null); // useRef is needed for the name length check
-  const [longName, setLongName] = useState(false); // State for long name
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in to access NomNom AI.");
+      navigate("/login");
+    }
+  }, [navigate]);
 
   useEffect(() => {
-    fetch("https://nomnom-ai.onrender.com/api/restaurants")
-      .then((res) => res.json())
-      .then((data) => {
-        setRestaurants(data); // Save all restaurants
-      })
-      .catch((err) => console.error("API fetch error:", err));
-  }, []);
+  fetch("https://nomnom-ai.onrender.com/api/restaurants")
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("Fetched restaurants:", data); // 👈 DEBUG
+      setRestaurants(data);
+    })
+    .catch((err) => console.error("API fetch error:", err));
+}, []);
 
   // Derive the current restaurant based on restaurants array and currentIndex
   const restaurant = restaurants[currentIndex];
 
-  // Effect to check if the restaurant name is too long
-  useEffect(() => {
-    if (nameRef.current && restaurant) {
-      const computedStyle = getComputedStyle(nameRef.current);
-      const lineHeight = parseFloat(computedStyle.lineHeight);
-      const height = nameRef.current.offsetHeight;
-      const lines = Math.round(height / lineHeight);
-      setLongName(lines > 1);
-    }
-  }, [restaurant]); // Re-run when the current restaurant changes
-
   // Conditional render for loading state - must be after all hooks
-  if (!restaurant) {
-    return <p className="loading">Loading...</p>;
-  }
+  if (!restaurants.length) {
+  return <p className="loading">Loading restaurants...</p>;
+}
+
 
   // Function to toggle details view
   const toggleDetails = (e) => {
@@ -182,8 +182,7 @@ export default function HomePage() {
             {/* Name & Rating */}
             <div className="home-name-rating-container">
               <h2
-                ref={nameRef}
-                className={`home-restaurant-name ${longName ? "long-name" : ""}`}
+                className="home-restaurant-name"
               >
                 {restaurant.Name}
               </h2>

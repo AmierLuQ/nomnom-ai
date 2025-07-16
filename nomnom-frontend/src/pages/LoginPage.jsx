@@ -46,12 +46,43 @@ export default function LoginPage() {
     }
   };
 
+  const handlePotatoLogin = async () => {
+    try {
+      const response = await fetch("https://your-backend.onrender.com/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "potato", // 👈 your potato account username
+          password: "potato123", // 👈 your potato account password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("username", data.username);
+        navigate("/home");
+      } else {
+        console.error("Potato login failed:", data.message);
+        alert("Failed to login as Potato.");
+      }
+    } catch (err) {
+      console.error("Potato login error:", err);
+      alert("Something went wrong. Please try again later.");
+    }
+  };
+
+
   return (
     <div className="login-auth-container">
       {/* Potato Button */}
-      <button className="login-potato-button" onClick={() => navigate("/home")}>
+      <button className="login-potato-button" onClick={handlePotatoLogin}>
         Potato
       </button>
+
 
       {/* Logo Section */}
       <img
