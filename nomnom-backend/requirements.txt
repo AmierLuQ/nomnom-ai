@@ -1,5 +1,8 @@
 Flask
-flask-cors
+Flask-CORS
+Flask-SQLAlchemy
+Flask-Bcrypt
+Flask-JWT-Extended
+gunicorn
 pandas
 openpyxl
-gunicorn
