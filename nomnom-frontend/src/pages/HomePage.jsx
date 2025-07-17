@@ -49,6 +49,7 @@ useEffect(() => {
         // Log out user if auth fails
         localStorage.removeItem("token");
         localStorage.removeItem("username");
+        alert("Invalid or Expired Token");
         navigate("/login");
         throw new Error("Authentication failed");
       }

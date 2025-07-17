@@ -6,15 +6,20 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from sqlalchemy import func
 from recommender import get_recommendations
 import datetime
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
 # --- Configurations ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nomnom.db'
+db_url = os.environ.get('DATABASE_URL')
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///nomnom.db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'super-secret-key'
+app.config['JWT_SECRET_KEY'] = 'super-secret-key' # Consider changing this and storing it as an environment variable too
 
 # --- Initialize Extensions ---
 db = SQLAlchemy(app)

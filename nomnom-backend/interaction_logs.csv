@@ -1,0 +1,2 @@
+id,user_id,restaurant_id,recommendation_rank,user_action,timestamp,swipe_time_sec,final_ordered,user_feedback
+
