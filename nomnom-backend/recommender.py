@@ -1,19 +1,19 @@
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text # <--- FIX: Import the text function
 from math import radians, sin, cos, sqrt, atan2
 import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-# Get the database URL from environment variables, just like in app.py
+# --- Database Connection ---
 db_url = os.environ.get('DATABASE_URL')
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
-
-# Use the production DB URL if available, otherwise fall back to local sqlite
 engine = create_engine(db_url or 'sqlite:///nomnom.db')
 
-# --- Helper Functions (No changes needed here) ---
+# --- Helper Functions ---
 def haversine(lat1, lon1, lat2, lon2):
-    # ... (rest of the function is the same)
+    """Calculate the distance between two points on Earth."""
     R = 6371
     lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
     dlon = lon2 - lon1
@@ -23,20 +23,18 @@ def haversine(lat1, lon1, lat2, lon2):
     distance = R * c
     return distance
 
-# --- Recommendation Logic (No changes needed here) ---
+# --- Recommendation Logic ---
+
 def get_meal_count(user_id):
-    """
-    Check how many 'eat' interactions a user has logged in the
-    InteractionLog table. This is a more reliable measure of activity.
-    """
-    query = f"SELECT COUNT(*) FROM interaction_log WHERE user_id = '{user_id}' AND user_action = 'eat'"
+    """Check how many 'eat' interactions a user has logged."""
+    query_string = f"SELECT COUNT(*) FROM interaction_log WHERE user_id = '{user_id}' AND user_action = 'eat'"
     with engine.connect() as connection:
-        # .scalar() returns the first element of the first row, or None
-        result = connection.execute(query).scalar()
+        # FIX: Wrap the raw SQL string in the text() construct to make it executable
+        result = connection.execute(text(query_string)).scalar()
     return result if result else 0
 
 def recommend_for_new_user(target_user_id, all_users_df, reviews_df):
-    # ... (rest of the function is the same)
+    """Recommend for new users based on demographic similarity."""
     try:
         target_user = all_users_df[all_users_df['id'] == target_user_id].iloc[0]
     except IndexError:
@@ -49,35 +47,61 @@ def recommend_for_new_user(target_user_id, all_users_df, reviews_df):
         
         age_diff = abs(target_user['age'] - user['age'])
         age_score = max(0, 1 - (age_diff / 20)) 
-
         gender_score = 1 if target_user['gender'] == user['gender'] else 0.5
-        
         distance = haversine(target_user['latitude'], target_user['longitude'], user['latitude'], user['longitude'])
         distance_score = max(0, 1 - (distance / 50))
-
         total_similarity = (age_score * 0.4) + (gender_score * 0.2) + (distance_score * 0.4)
         similarities.append((user['id'], total_similarity))
 
     similar_users = sorted(similarities, key=lambda x: x[1], reverse=True)[:10]
     similar_user_ids = [uid for uid, score in similar_users]
 
+    if not similar_user_ids:
+        return []
+
     recommendations = reviews_df[reviews_df['user_id'].isin(similar_user_ids)]
     top_rated_by_similar_users = recommendations[recommendations['rating'] >= 4]
     recommended_restaurants = top_rated_by_similar_users['restaurant_id'].value_counts().nlargest(10).index.tolist()
-
     return recommended_restaurants
 
-def recommend_for_active_user(user_id):
-    # ... (rest of the function is the same)
-    query = "SELECT id FROM restaurant ORDER BY google_rating DESC LIMIT 10"
-    with engine.connect() as connection:
-        result = connection.execute(query)
-        return [row[0] for row in result]
+def recommend_for_active_user(user_id, restaurants_df, interactions_df):
+    """Recommend for active users using content-based filtering on restaurant tags."""
+    user_eaten_restaurants = interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'eat')]
+    eaten_restaurant_ids = user_eaten_restaurants['restaurant_id'].unique()
+
+    if len(eaten_restaurant_ids) == 0:
+        return []
+
+    restaurants_df['tags_combined'] = restaurants_df[['tag_1', 'tag_2', 'tag_3']].fillna('').agg(' '.join, axis=1)
+
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf.fit_transform(restaurants_df['tags_combined'])
+
+    user_profile_indices = restaurants_df[restaurants_df['id'].isin(eaten_restaurant_ids)].index
+    user_profile_vector = tfidf_matrix[user_profile_indices].mean(axis=0)
+
+    cosine_sim = cosine_similarity(user_profile_vector, tfidf_matrix)
+
+    sim_scores = list(enumerate(cosine_sim[0]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+    top_indices = [i[0] for i in sim_scores[:15]]
+    
+    recommended_ids = []
+    for idx in top_indices:
+        restaurant_id = restaurants_df.iloc[idx]['id']
+        if restaurant_id not in eaten_restaurant_ids:
+            recommended_ids.append(restaurant_id)
+
+    return recommended_ids[:10]
+
 
 def get_recommendations(user_id):
-    # ... (rest of the function is the same)
+    """Main recommendation function."""
     users_df = pd.read_sql_table('user', engine)
     reviews_df = pd.read_sql_table('review', engine)
+    restaurants_df = pd.read_sql_table('restaurant', engine)
+    interactions_df = pd.read_sql_table('interaction_log', engine)
     
     meal_count = get_meal_count(user_id)
     
@@ -86,4 +110,4 @@ def get_recommendations(user_id):
         return recommend_for_new_user(user_id, users_df, reviews_df)
     else:
         print(f"User {user_id} is an active user (meals: {meal_count}). Using personalized model.")
-        return recommend_for_active_user(user_id)
+        return recommend_for_active_user(user_id, restaurants_df, interactions_df)

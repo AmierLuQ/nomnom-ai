@@ -26,7 +26,9 @@ def seed_data():
             print("\nPreparing users...")
             users_df = pd.read_csv('users.csv')
             for _, row in users_df.iterrows():
+                # THIS IS THE CRITICAL FIX: HASH THE PASSWORD
                 hashed_pw = bcrypt.generate_password_hash(row['password']).decode('utf-8')
+                
                 dob = None
                 if pd.notna(row['dob']):
                     try:
@@ -95,8 +97,6 @@ def seed_data():
             print(f"-> {len(interactions_df)} interaction logs ready.")
 
             # --- FINAL COMMIT ---
-            # This is the single most important step. All the 'add' operations above
-            # are staged, and this one command sends them all to the database at once.
             print("\nCommitting all staged data to the database...")
             db.session.commit()
             print("\n✅ Seeding complete! All data has been committed.")
