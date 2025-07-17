@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy import func
+from recommender import get_recommendations
 import datetime
 
 # Initialize Flask app
@@ -207,21 +208,47 @@ def get_restaurants():
         print("❌ Error in /api/restaurants:", e)
         return jsonify({'message': 'Server error fetching restaurants'}), 500
 
-# ✅ Recommend Restaurants (Mock: Top 5 by rating)
+# ✅ Recommend Restaurants 
 @app.route('/api/recommend', methods=['GET'])
 @jwt_required()
 def recommend():
-    user_id = get_jwt_identity()
-    recommendations = Restaurant.query.order_by(Restaurant.google_rating.desc()).limit(5).all()
-    result = [{
-        'id': r.id,
-        'name': r.name,
-        'tags': [r.tag_1, r.tag_2, r.tag_3],
-        'google_rating': r.google_rating,
-        'price_range': f"{r.price_min} - {r.price_max}",
-        'location': f"{r.latitude}, {r.longitude}"
-    } for r in recommendations]
-    return jsonify({'user_id': user_id, 'recommendations': result}), 200
+    try:
+        user_id = get_jwt_identity()
+        
+        # Call our new recommendation function
+        recommended_ids = get_recommendations(user_id)
+        
+        if not recommended_ids:
+            # Fallback: if no recommendations, return top rated globally
+            recommended_ids = [r.id for r in Restaurant.query.order_by(Restaurant.google_rating.desc()).limit(10).all()]
+
+        # Fetch full restaurant details from the database based on IDs
+        # The 'in_' operator requires a list of values
+        recommendations = Restaurant.query.filter(Restaurant.id.in_(recommended_ids)).all()
+        
+        # Preserve the order from the recommendation engine
+        recommendations_dict = {r.id: r for r in recommendations}
+        ordered_recs = [recommendations_dict[rid] for rid in recommended_ids if rid in recommendations_dict]
+
+        result = [{
+            'id': r.id,
+            'name': r.name,
+            'tags': [tag for tag in [r.tag_1, r.tag_2, r.tag_3] if tag], # Clean up null tags
+            'google_rating': r.google_rating,
+            'price_range': f"{r.price_min} - {r.price_max}",
+            'location': f"{r.latitude},{r.longitude}",
+            'description': r.description,
+            'address': r.address,
+            'opening_time': r.opening_time,
+            'closing_time': r.closing_time,
+            'phone': r.phone
+        } for r in ordered_recs]
+        
+        return jsonify({'user_id': user_id, 'recommendations': result}), 200
+
+    except Exception as e:
+        print(f"❌ Error in /api/recommend: {e}")
+        return jsonify({'message': 'Error generating recommendations'}), 500
 
 # --- Run App ---
 if __name__ == '__main__':

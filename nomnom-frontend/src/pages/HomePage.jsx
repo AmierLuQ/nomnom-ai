@@ -25,23 +25,42 @@ export default function HomePage() {
   const [showDetails, setShowDetails] = useState(false);
   const navigate = useNavigate();
   
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Please log in to access NomNom AI.");
-      navigate("/login");
-    }
-  }, [navigate]);
+useEffect(() => {
+  // Get token from localStorage
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Please log in to access NomNom AI.");
+    navigate("/login");
+    return; // Stop execution if no token
+  }
 
-  useEffect(() => {
-  fetch("https://nomnom-ai.onrender.com/api/restaurants")
-    .then((res) => res.json())
+  // Fetch from the new /api/recommend endpoint
+  fetch("https://nomnom-ai.onrender.com/api/recommend", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      // Add the JWT token for authentication
+      "Authorization": `Bearer ${token}`,
+    },
+  })
+    .then((res) => {
+      // If token is invalid or expired, server will send 401/422
+      if (!res.ok) {
+        // Log out user if auth fails
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        navigate("/login");
+        throw new Error("Authentication failed");
+      }
+      return res.json();
+    })
     .then((data) => {
-      console.log("Fetched restaurants:", data); // 👈 DEBUG
-      setRestaurants(data);
+      console.log("Fetched recommendations:", data.recommendations); // 👈 DEBUG
+      // The API will return { recommendations: [...] }
+      setRestaurants(data.recommendations);
     })
     .catch((err) => console.error("API fetch error:", err));
-}, []);
+}, [navigate]); // Dependency array is correct
 
   // Derive the current restaurant based on restaurants array and currentIndex
   const restaurant = restaurants[currentIndex];
