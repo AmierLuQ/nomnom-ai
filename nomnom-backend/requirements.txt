@@ -6,3 +6,5 @@ Flask-JWT-Extended
 gunicorn
 pandas
 openpyxl
+python-dotenv
+psycopg2-binary
