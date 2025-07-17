@@ -125,7 +125,6 @@ useEffect(() => {
   // Determine current opening status based on actual opening/closing times
   const getOpenStatus = (openingHours, closingHours) => {
     const now = new Date();
-    const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, etc.
     const currentTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes
 
     if (!openingHours || !closingHours) return { status: 'Unknown', isOpen: false };
