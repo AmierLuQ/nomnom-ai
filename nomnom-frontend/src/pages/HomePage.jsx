@@ -71,7 +71,7 @@ export default function HomePage() {
     // Initial fetch when the component mounts
     useEffect(() => {
         fetchRecommendations([]);
-    }, []); // Note: fetchRecommendations is not a dependency to prevent re-fetching
+    }, [fetchRecommendations]); // Note: fetchRecommendations is not a dependency to prevent re-fetching
 
     // --- REVISED: Event Handlers ---
     const handleNextCard = useCallback(() => {
