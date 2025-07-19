@@ -25,20 +25,51 @@ def haversine(lat1, lon1, lat2, lon2):
         return float('inf')
     R = 6371; lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2]); dlon = lon2 - lon1; dlat = lat2 - lat1; a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2; c = 2 * atan2(sqrt(a), sqrt(1 - a)); return R * c
 
+# --- NEW: Function to check if a restaurant is open ---
+def is_restaurant_open(restaurant_row, current_time_float):
+    opening_time_str = restaurant_row['opening_time']
+    closing_time_str = restaurant_row['closing_time']
+
+    # Assume the restaurant is open if operating hours are not specified.
+    if pd.isna(opening_time_str) or pd.isna(closing_time_str):
+        return True
+
+    try:
+        open_hour, open_min, _ = map(int, opening_time_str.split(':'))
+        close_hour, close_min, _ = map(int, closing_time_str.split(':'))
+        
+        open_time_float = open_hour + open_min / 60.0
+        close_time_float = close_hour + close_min / 60.0
+        
+        # Handle the common case where a restaurant closes after midnight.
+        if close_time_float < open_time_float:
+            return current_time_float >= open_time_float or current_time_float < close_time_float
+        # Handle the standard same-day case.
+        else:
+            return open_time_float <= current_time_float < close_time_float
+    except (ValueError, TypeError):
+        # If time format is incorrect, assume it's open to be safe.
+        return True
+
 def get_current_context():
     now = datetime.now()
     day = now.strftime('%A')
-    hour = now.hour + now.minute / 60.0
-    if 4.0 <= hour < 7.0: meal_time = "Suhoor"
-    elif 7.0 <= hour < 10.0: meal_time = "Breakfast"
-    elif 10.0 <= hour < 12.0: meal_time = "Brunch"
-    elif 12.0 <= hour < 16.0: meal_time = "Lunch"
-    elif 16.0 <= hour < 17.5: meal_time = "Tea Time"
-    elif 17.5 <= hour < 19.5: meal_time = "Linner"
-    elif 19.5 <= hour < 22.0: meal_time = "Dinner"
-    elif 22.0 <= hour < 23.5: meal_time = "Late Dinner"
+    hour = now.hour
+    minute = now.minute
+    current_time_float = hour + minute / 60.0 # e.g., 14.5 for 2:30 PM
+
+    if 4.0 <= current_time_float < 7.0: meal_time = "Suhoor"
+    elif 7.0 <= current_time_float < 10.0: meal_time = "Breakfast"
+    elif 10.0 <= current_time_float < 12.0: meal_time = "Brunch"
+    elif 12.0 <= current_time_float < 16.0: meal_time = "Lunch"
+    elif 16.0 <= current_time_float < 17.5: meal_time = "Tea Time"
+    elif 17.5 <= current_time_float < 19.5: meal_time = "Linner"
+    elif 19.5 <= current_time_float < 22.0: meal_time = "Dinner"
+    elif 22.0 <= current_time_float < 23.5: meal_time = "Late Dinner"
     else: meal_time = "Midnight Snack"
-    return day, meal_time
+    
+    # Return all context pieces
+    return day, meal_time, current_time_float
 
 def get_meal_count(user_id, interactions_df):
     return len(interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'eat')])
@@ -126,7 +157,7 @@ def recommend_for_new_user(user, restaurants_df, meals_df, exclude_ids=[]):
 
 def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False):
     print(f"Running model for user {user['id']} (New User: {is_new_user})")
-    context = get_current_context()
+    day, meal_time, current_time_float = get_current_context()
     
     user_profile = build_user_profile(user['id'], meals_df, restaurants_df, interactions_df)
     
@@ -135,8 +166,8 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
         pattern_model, encoders = train_pattern_recognition_model(user['id'], meals_df, restaurants_df)
         if pattern_model:
             try:
-                day_encoded = encoders['day'].transform([context[0]])[0]
-                meal_time_encoded = encoders['meal_time'].transform([context[1]])[0]
+                day_encoded = encoders['day'].transform([day])[0]
+                meal_time_encoded = encoders['meal_time'].transform([meal_time])[0]
                 predicted_tag_encoded = pattern_model.predict([[day_encoded, meal_time_encoded]])[0]
                 predicted_tag = encoders['tag'].inverse_transform([predicted_tag_encoded])[0]
                 print(f"Pattern model predicts user is in the mood for: {predicted_tag}")
@@ -144,7 +175,6 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
                 print(f"Could not predict tag: {e}")
 
     if is_new_user:
-        day, meal_time = context
         popular_now_ids = meals_df[meals_df['meal_time'] == meal_time]['restaurant_id'].value_counts().nlargest(30).index.tolist()
         restaurants_df['distance'] = restaurants_df.apply(lambda row: haversine(user['latitude'], user['longitude'], row['latitude'], row['longitude']), axis=1)
         nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
@@ -155,11 +185,16 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
 
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: return []
+
+    # --- NEW: Filter candidates by whether they are currently open ---
+    open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(current_time_float,), axis=1)]
+    if open_candidates.empty:
+        print("No open restaurants found among candidates.")
+        return []
     
     scored_recs = []
-    for _, restaurant in candidate_details.iterrows():
-        score = calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag)
-        # FIX: Corrected the variable name from scored_cs to scored_recs
+    for _, restaurant in open_candidates.iterrows():
+        score = calculate_relevance_score(restaurant, user, user_profile, (day, meal_time), predicted_tag)
         scored_recs.append((restaurant['id'], score))
         
     scored_recs.sort(key=lambda x: x[1], reverse=True)
