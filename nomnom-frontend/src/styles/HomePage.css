@@ -81,41 +81,101 @@
 /* ==================== Header ==================== */
 .home-header {
   width: 100%;
+  max-width: 430px; /* Match the image box width */
   margin-top: 10px;
   margin-bottom: 20px;
   display: flex;
-  justify-content: center; /* Center the logo */
+  justify-content: space-between; /* MODIFIED: Space out logo and user info */
+  align-items: center;
+  padding: 0 20px; /* Add some horizontal padding */
+  box-sizing: border-box;
 }
 
 .home-logo {
   width: auto;
-  height: 7vh;
-  object-fit: contain; /* Ensure logo fits without stretching */
+  height: 60px; /* Set a fixed px height for mobile */
+  object-fit: contain;
 }
+
+.home-user-info {
+  transform: translateY(4px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-welcome-text {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: #FDFFFC;
+  opacity: 0.9;
+}
+
+.home-logout-button {
+  background-color: #FF7E21;
+  color: #010813;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.home-logout-button:hover {
+  background-color: #FC3B48;
+  transform: scale(1.05);
+}
+
+.home-profile-button {
+  background: none;
+  border: none;
+  color: #FDFFFC;
+  font-size: 24px; /* Adjust size as needed */
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.home-profile-button:hover {
+  color: #41EAD4; /* Highlight color on hover */
+  transform: scale(1.1);
+}
+
+/* Adjust the user info container to accommodate the new button */
+.home-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* This will apply spacing between all items */
+}
+
 
 /* ==================== Image Box ==================== */
 .home-image-box {
   position: relative;
-  width: 430px; /* Kept your revised fixed width */
-  max-width: 430px; /* Laptop max width */
+  width: 430px;
+  max-width: 430px;
   max-height: 645px;
   aspect-ratio: 2 / 3;
   border-radius: 25px;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  display: flex; /* For positioning internal elements */
+  display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* Initial state: content at bottom */
-  transition: all 0.5s ease-in-out; /* Smooth transition for expansion */
-  flex-grow: 1; /* Allow image box to grow and fill space */
+  justify-content: flex-end;
+  transition: all 0.5s ease-in-out;
+  flex-grow: 1;
 }
 
-/* Expanded state for image box */
+/* ... (rest of your CSS file is unchanged) ... */
 .home-image-box.expanded {
-  flex-grow: 1; /* Ensure it takes full height available */
-  justify-content: flex-start; /* Move content to top */
+  flex-grow: 1;
+  justify-content: flex-start;
 }
-
 .home-restaurant-image {
   position: absolute;
   top: 0;
@@ -123,146 +183,122 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 1; /* Below content and gradient */
+  z-index: 1;
 }
-
 .home-image-gradient {
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 33%; /* 1/3 of the image */
+  height: 33%;
   background: linear-gradient(to top, #011627e6, #011627b3, #01162700);
-  z-index: 2; /* Above image, below content */
-  transition: height 0.5s ease-in-out, background 0.8s ease-in-out; /* Added background transition */
+  z-index: 2;
+  transition: height 0.5s ease-in-out, background 0.8s ease-in-out;
 }
-
 .home-image-box.expanded .home-image-gradient {
-  height: 120%; /* Cover whole image when expanded */
+  height: 120%;
   background: linear-gradient(to top, #011627e6, #011627b3, #01162786, #01162700);
 }
-
-/* ==================== Content Overlay ==================== */
 .home-image-content {
-  position: relative; /* Relative for positioning .home-details-container */
-  z-index: 3; /* Above gradient and image */
-  padding: 20px; /* Padding on all sides */
-  padding-bottom: 8px; /* Kept your revised padding */
+  position: relative;
+  z-index: 3;
+  padding: 20px;
+  padding-bottom: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center horizontally for initial state */
-  height: 100%; /* Take full height of parent */
-  width: 100%; /* Take full width of parent */
-  box-sizing: border-box; /* Include padding in width/height */
-  pointer-events: none; /* Allow clicks to pass through to underlying elements if nothing specific is here */
-  overflow: hidden; /* Prevent text/content from spilling during transitions */
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: hidden;
 }
-
 .home-image-box.expanded .home-image-content {
-  justify-content: space-between; /* Expanded: content at top */
-  align-items: flex-start; /* Align to left within padding */
-  overflow-y: hidden; /* Enable scrolling for details */
+  justify-content: space-between;
+  align-items: flex-start;
+  overflow-y: hidden;
 }
-
-/* Group for name + tags (initial state) */
 .home-top-info-container {
   display: flex;
   position-anchor: top;
-  margin-top: auto; /* Kept your revised margin */
+  margin-top: auto;
   flex-direction: column;
-  width: 100%; /* Take full width within padding */
+  width: 100%;
   transform: translateY(-100px);
   pointer-events: auto; 
   transition: transform 0.4s ease-in-out;
 }
-
 .home-image-box.expanded .home-top-info-container {
   transform: translateY(-500px);
 }
-
 .home-name-rating-container {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end; /* Vertically anchor name to the bottom of its line */
+  align-items: flex-end;
   width: 100%;
-  margin-bottom: -6px; /* Kept your revised margin */
+  margin-bottom: -6px;
 }
-
 .home-image-box.expanded .home-name-rating-container {
-  align-items: baseline; /* Align by text baseline */
-  
+  align-items: baseline;
 }
-
 .home-restaurant-name {
   font-family: "Inter", sans-serif;
-  font-size: 24px; /* Kept your revised font size */
+  font-size: 24px;
   font-weight: bold;
   text-align: left;
-  flex-grow: 1; /* Allow name to take available space */
-  margin-right: 16px; /* Space between name and rating */
-  line-height: 1; /* Ensure line-height doesn't affect margin calc */
+  flex-grow: 1;
+  margin-right: 16px;
+  line-height: 1;
   text-shadow: 0px 0px 4px #00000080;
 }
-
 .home-restaurant-rating {
   font-family: "Inter", sans-serif;
-  font-size: 14px; /* Kept your revised font size */
+  font-size: 14px;
   font-weight: normal;
   text-align: right;
-  white-space: nowrap; /* Prevent wrapping for rating */
+  white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 4px; /* Space between rating number and stars */
-  line-height: 32px; /* Ensure line-height doesn't affect margin calc */
+  gap: 4px;
+  line-height: 32px;
   text-shadow: 0px 0px 4px #00000080;
 }
 .home-restaurant-rating svg {
-  vertical-align: middle; /* Align stars nicely */
+  vertical-align: middle;
 }
-
-
 .home-pill-container {
   display: flex;
-  flex-wrap: wrap; /* Allow pills to wrap to next line */
-  gap: 10px; /* Space between pills */
-  width: 100%; /* Take full width within padding */
-  margin-bottom: 32px; /* Kept your revised margin */
-  margin-top: 0px; /* Kept your revised margin */
-  justify-content: space-between; /* Distribute pills evenly */
-
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 32px;
+  margin-top: 0px;
+  justify-content: space-between;
 }
-
 .home-pill-box {
   color: #011627;
   background-color: #FDFFFC;
   font-family: "DM Sans", sans-serif;
-  font-weight: bold; /* Bold as per requirement */
-  font-size: 10px; /* Kept your revised font size */
+  font-weight: bold;
+  font-size: 10px;
   padding: 4px 12px;
-  border-radius: 999px; /* Pill shape */
-  white-space: nowrap; /* Prevent text wrapping inside pill */
-  flex-grow: 1; /* Allow pills to grow dynamically */
-  flex-basis: auto; /* Allow pills to determine their own base width */
-  text-align: center; /* Center text within pill */
-  min-width: 20px; /* Prevent pills from becoming too small */
-  box-sizing: border-box; /* Include padding in width */
-  height: fit-content; /* Ensure height fits content */
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-grow: 1;
+  flex-basis: auto;
+  text-align: center;
+  min-width: 20px;
+  box-sizing: border-box;
+  height: fit-content;
 }
-
 .home-pill-box.home-tag {
   background-color: #41EAD4;
 }
-
 .home-pill-box.home-price {
   background-color: #FF7E21;
 }
-
-/* Hide price pill in expanded view */
 .home-image-box.expanded .home-pill-box.home-price {
   display: none;
 }
-
-
-/* ==================== Description View ==================== */
 .home-details-container {
   position: absolute;
   top: 0;
@@ -287,14 +323,12 @@
   box-sizing: border-box;
   top: 120px;
 }
-
 .home-details-container.show {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
   pointer-events: auto;
 }
-
 .home-map-placeholder {
   width: 100%;
   height: 180px;
@@ -312,8 +346,6 @@
 .home-map-placeholder p {
   margin-top: 8px;
 }
-
-
 .home-info-row {
   display: flex;
   align-items: flex-start;
@@ -321,14 +353,12 @@
   font-size: 14px;
   line-height: 1.4;
 }
-
 .home-info-row svg {
   align-self: center;
   width: 16px;
   height: auto;
   flex-shrink: 0;
 }
-
 .home-info-row .home-status-open {
   color: #4CAF50;
   font-weight: bold;
@@ -337,9 +367,6 @@
   color: #FC3B48;
   font-weight: bold;
 }
-
-
-/* ==================== Button Group & Swipe Indicator ==================== */
 .home-bottom-fixed {
   width: 90%;
   pointer-events: auto;
@@ -347,14 +374,12 @@
   bottom: 0;
   padding: 0px;
 }
-
 .home-button-group {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
 }
-
 .home-action-button {
   background-color: #fdfffc;
   border: 4px solid;
@@ -369,8 +394,6 @@
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-
-/* Specific button styles */
 .home-action-button.home-skip {
   border-color: #FC3B48;
   color: #FC3B48;
@@ -393,14 +416,11 @@
   height: 80px;
   font-size: 40px;
 }
-
 .home-action-button:hover,
 .home-action-button:active {
   transform: scale(1.1);
   filter: brightness(1.2);
 }
-
-/* Swipe Indicators */
 .home-swipe-indicator-bottom {
   margin-top: 8px;
   font-size: 24px;
@@ -410,7 +430,6 @@
   animation: bounce 1.5s infinite;
   pointer-events: auto;
 }
-
 @keyframes bounce {
   0%, 100% {
     transform: translateY(0);
@@ -419,13 +438,11 @@
     transform: translateY(-8px);
   }
 }
-
-/* ==================== Footer ==================== */
 .home-footer {
   font-family: "DM Sans", sans-serif;
   margin-top: 64px;
   font-size: 0.75rem;
   color: #FDFFFC;
   opacity: 0.5;
-  margin-bottom: 10px; /* Small margin at the bottom */
+  margin-bottom: 10px;
 }

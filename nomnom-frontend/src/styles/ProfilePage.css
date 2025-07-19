@@ -1,0 +1,210 @@
+/* ==================== Base Container ==================== */
+.profile-container {
+    background-image: linear-gradient(#011627, #011627, #010813);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #FDFFFC;
+    font-family: "DM Sans", sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.loading-message {
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+/* ==================== Header ==================== */
+.profile-header {
+    width: 100%;
+    max-width: 430px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center title by default */
+    position: relative; /* For positioning the back button */
+    margin-bottom: 30px;
+}
+
+.profile-title {
+    font-family: "Inter", sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.profile-back-button {
+    position: absolute;
+    left: 0;
+    background: none;
+    border: none;
+    color: #FDFFFC;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* ==================== Main Content ==================== */
+.profile-content {
+    width: 100%;
+    max-width: 430px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Profile Card */
+.profile-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #41EAD4;
+    color: #011627;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.profile-username {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.profile-email {
+    font-size: 14px;
+    opacity: 0.7;
+    margin: 0;
+}
+
+/* Stats Section */
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.stat-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-icon {
+    font-size: 24px;
+    color: #41EAD4;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 12px;
+    opacity: 0.7;
+    text-align: center;
+}
+
+/* Recent History */
+.profile-history {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.history-title {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: left;
+    margin: 0 0 16px 0;
+}
+
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-item-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.history-item-name {
+    font-weight: bold;
+}
+
+.history-item-date {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+.history-item-rating {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.history-empty {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+/* Logout Button */
+.profile-logout-button {
+    background-color: #FC3B48;
+    color: #FDFFFC;
+    border: none;
+    border-radius: 15px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.profile-logout-button:hover {
+    background-color: #e02d39;
+    transform: scale(1.02);
+}

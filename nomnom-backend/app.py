@@ -135,6 +135,78 @@ def get_users():
         print("❌ Error in /api/users:", e)
         return jsonify({'message': 'Server error fetching users'}), 500
 
+# --- Profile Page Endpoint ---
+@app.route('/api/profile', methods=['GET'])
+@jwt_required()
+def user_profile():
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+
+        # 1. Get User Info
+        user_info = {
+            'username': user.username,
+            'email': user.email,
+            'name': user.name,
+            'age': user.age
+        }
+
+        # 2. Calculate Stats
+        meals = Meal.query.filter_by(user_id=user_id).all()
+        reviews = Review.query.filter_by(user_id=user_id).all()
+
+        total_meals = len(meals)
+        
+        avg_rating = 0
+        if reviews:
+            avg_rating = sum(r.rating for r in reviews) / len(reviews)
+
+        favorite_cuisine = 'N/A'
+        if meals:
+            # Find the most frequent tag from the user's eaten restaurants
+            meal_restaurant_ids = [m.restaurant_id for m in meals]
+            tags = db.session.query(Restaurant.tag_1, Restaurant.tag_2, Restaurant.tag_3)\
+                .filter(Restaurant.id.in_(meal_restaurant_ids)).all()
+            
+            tag_counts = pd.Series([tag for row in tags for tag in row if tag]).value_counts()
+            if not tag_counts.empty:
+                favorite_cuisine = tag_counts.index[0]
+
+        stats = {
+            'total_meals': total_meals,
+            'average_rating': avg_rating,
+            'favorite_cuisine': favorite_cuisine
+        }
+
+        # 3. Get Recent Meals (last 5)
+        recent_meals_query = db.session.query(Meal, Restaurant.name, Review.rating)\
+            .join(Restaurant, Meal.restaurant_id == Restaurant.id)\
+            .outerjoin(Review, (Review.user_id == Meal.user_id) & (Review.restaurant_id == Meal.restaurant_id))\
+            .filter(Meal.user_id == user_id)\
+            .order_by(Meal.date.desc())\
+            .limit(5).all()
+
+        recent_meals = [{
+            'meal_id': meal.id,
+            'restaurant_name': name,
+            'date': meal.date.isoformat(),
+            'rating': rating
+        } for meal, name, rating in recent_meals_query]
+
+        return jsonify({
+            'user_info': user_info,
+            'stats': stats,
+            'recent_meals': recent_meals
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error in /api/profile: {e}")
+        return jsonify({'message': 'Server error fetching profile data'}), 500
+
+
 # ... (The rest of your endpoints: /register, /login, /restaurants, /recommend)
 # ... (No changes are needed for them)
 @app.route('/api/register', methods=['POST'])

@@ -3,7 +3,7 @@ import "../styles/HomePage.css";
 import {
     FaTimes, FaUndoAlt, FaHeart, FaUtensils, FaChevronUp, FaChevronDown,
     FaStar, FaStarHalfAlt, FaRegStar, FaMapMarkerAlt, FaRegStickyNote,
-    FaClock, FaMoneyBillWave, FaPhone,
+    FaClock, FaMoneyBillWave, FaPhone, FaUserCircle
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -25,9 +25,17 @@ export default function HomePage() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [hasFinished, setHasFinished] = useState(false);
     const navigate = useNavigate();
+    const [username, setUsername] = useState(''); // <-- ADDED: State for username
 
-    // FIX: A ref to track if it's the initial load, preventing useEffect loops.
     const isInitialLoad = useRef(true);
+
+    // --- ADDED: Get username on initial load ---
+    useEffect(() => {
+        const storedUsername = localStorage.getItem("username");
+        if (storedUsername) {
+            setUsername(storedUsername);
+        }
+    }, []);
 
     const loadRecommendations = useCallback((currentRestaurantIds = []) => {
         if (isLoadingMore || hasFinished) return;
@@ -68,10 +76,9 @@ export default function HomePage() {
         });
     }, [navigate, hasFinished, isLoadingMore]);
 
-    // This useEffect hook now safely runs ONLY ONCE for the initial load.
     useEffect(() => {
         if (isInitialLoad.current) {
-            isInitialLoad.current = false; // Set it to false after the first run
+            isInitialLoad.current = false;
             loadRecommendations();
         }
     }, [loadRecommendations]);
@@ -79,7 +86,6 @@ export default function HomePage() {
     // --- Event Handlers ---
     const handleNextCard = () => {
         const nextIndex = currentIndex + 1;
-        // The logic to fetch more remains the same, but it will now work correctly.
         if (restaurants && nextIndex >= restaurants.length - 2 && !isLoadingMore && !hasFinished) {
             const currentIds = restaurants.map(r => r.id);
             loadRecommendations(currentIds);
@@ -92,6 +98,13 @@ export default function HomePage() {
     const handleEat = (e) => { e.stopPropagation(); console.log("Eat!", restaurants[currentIndex]?.id); handleNextCard(); };
     const handleUndo = (e) => { e.stopPropagation(); if (currentIndex > 0) setCurrentIndex(c => c - 1); setShowDetails(false); };
     const handleFavorite = (e) => { e.stopPropagation(); console.log("Favorite!", restaurants[currentIndex]?.id); };
+
+    // --- ADDED: Logout Handler ---
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        navigate("/login");
+    };
 
     // Helper function to format the price range
     const formatPriceRange = (priceRangeString) => {
@@ -127,14 +140,41 @@ export default function HomePage() {
     const restaurant = restaurants[currentIndex];
     const toggleDetails = (e) => { if (e) e.stopPropagation(); setShowDetails((prev) => !prev); };
     const getStars = (rating) => { const r = Math.round(rating * 2) / 2; const f = Math.floor(r); const h = r - f >= 0.5; return [...Array(5)].map((_, i) => { if (i < f) return <FaStar key={i} color="#FFD700" />; if (i === f && h) return <FaStarHalfAlt key={i} color="#FFD700" />; return <FaRegStar key={i} color="#CCCCCC" />; }); };
-    const getOpenStatus = (o, c) => { if (!o || !c) return { status: 'Unknown', isOpen: false }; const n = new Date(); const t = n.getHours() * 60 + n.getMinutes(); const [oh, om] = o.split(':').map(Number); const [ch, cm] = c.split(':').map(Number); let ot = oh * 60 + om; let ct = ch * 60 + cm; if (ct < ot) { return { status: (t >= ot || t < ct) ? 'Open' : 'Closed', isOpen: (t >= ot || t < ct) }; } else { return { status: (t >= ot && t < ct) ? 'Open' : 'Closed', isOpen: (t >= ot && t < ct) }; } };
+    
+    const getOpenStatus = (openingHours, closingHours) => {
+        if (!openingHours || !closingHours) return { status: 'Open 24/7', isOpen: true };
+        if (openingHours === closingHours) return { status: 'Open 24/7', isOpen: true };
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const [openHour, openMinute] = openingHours.split(':').map(Number);
+        const [closeHour, closeMinute] = closingHours.split(':').map(Number);
+        let openTimeInMinutes = openHour * 60 + openMinute;
+        let closeTimeInMinutes = closeHour * 60 + closeMinute;
+        if (closeTimeInMinutes < openTimeInMinutes) {
+            return { status: (currentTime >= openTimeInMinutes || currentTime < closeTimeInMinutes) ? 'Open' : 'Closed', isOpen: (currentTime >= openTimeInMinutes || currentTime < closeTimeInMinutes) };
+        } else {
+            return { status: (currentTime >= openTimeInMinutes && currentTime < closeTimeInMinutes) ? 'Open' : 'Closed', isOpen: (currentTime >= openTimeInMinutes && currentTime < closeTimeInMinutes) };
+        }
+    };
+
     const getMapUrl = (l) => { if (!l) return null; const [lat, lon] = l.split(','); if (lat && lon) { return `https://www.google.com/maps/embed/v1/place?key=YOUR_MAPS_API_KEY&q=${lat},${lon}`; } return null; };
     const { status: openStatus, isOpen: isRestaurantOpen } = getOpenStatus(restaurant.opening_time, restaurant.closing_time);
     const mapUrl = getMapUrl(restaurant.location);
 
     return (
         <div className="home-container">
-            <header className="home-header"><img src="/nomnom-ai-long-logo.PNG" alt="NomNom AI Logo" className="home-logo" /></header>
+            {/* --- MODIFIED: Header with user info and logout button --- */}
+            <header className="home-header">
+                <img src="/nomnom-ai-long-logo.PNG" alt="NomNom AI Logo" className="home-logo" />
+                <div className="home-user-info">
+                    <span className="home-welcome-text">Hi, {username}!</span>
+                    {/* ADDED: Profile Button */}
+                    <button className="home-profile-button" onClick={() => navigate('/profile')}>
+                        <FaUserCircle />
+                    </button>
+                    <button className="home-logout-button" onClick={handleLogout}>Logout</button>
+                </div>
+            </header>
             <div className={`home-image-box ${showDetails ? "expanded" : ""}`}>
                 <img src={`/images/${restaurant.id.toLowerCase()}.png`} alt={restaurant.name} className="home-restaurant-image" />
                 <div className="home-image-gradient"></div>
@@ -144,7 +184,13 @@ export default function HomePage() {
                         {mapUrl ? (<div className="home-map-container"><iframe title="Google Map" src={mapUrl} width="100%" height="150" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe></div>) : (<div className="home-map-placeholder"><FaMapMarkerAlt size={24} /> <p>Map Not Available</p></div>)}
                         <div className="home-info-row"><FaMapMarkerAlt size={14} /> <span>{restaurant.address || "No address provided."}</span></div>
                         <div className="home-info-row"><FaRegStickyNote size={14} /> <span>{restaurant.description || "No description provided."}</span></div>
-                        <div className="home-info-row"><FaClock size={14} /><span><span className={isRestaurantOpen ? "home-status-open" : "home-status-closed"}>{openStatus}</span>{" • "}{restaurant.opening_time && restaurant.closing_time ? `${restaurant.opening_time.substring(0, 5)} - ${restaurant.closing_time.substring(0, 5)}` : "Hours unknown."}</span></div>
+                        <div className="home-info-row">
+                            <FaClock size={14} />
+                            <span>
+                                <span className={isRestaurantOpen ? "home-status-open" : "home-status-closed"}>{openStatus}</span>
+                                {openStatus !== 'Open 24/7' && restaurant.opening_time && restaurant.closing_time ? ` • ${restaurant.opening_time.substring(0, 5)} - ${restaurant.closing_time.substring(0, 5)}` : ""}
+                            </span>
+                        </div>
                         <div className="home-info-row"><FaMoneyBillWave size={14} /> <span>{formatPriceRange(restaurant.price_range)} per person</span></div>
                         <div className="home-info-row"><FaPhone size={14} /> <span>{restaurant.phone || "No phone number provided."}</span></div>
                     </div>

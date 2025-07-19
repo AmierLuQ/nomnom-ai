@@ -25,13 +25,17 @@ def haversine(lat1, lon1, lat2, lon2):
         return float('inf')
     R = 6371; lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2]); dlon = lon2 - lon1; dlat = lat2 - lat1; a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2; c = 2 * atan2(sqrt(a), sqrt(1 - a)); return R * c
 
-# --- NEW: Function to check if a restaurant is open ---
+# --- MODIFIED: Function to check if a restaurant is open ---
 def is_restaurant_open(restaurant_row, current_time_float):
     opening_time_str = restaurant_row['opening_time']
     closing_time_str = restaurant_row['closing_time']
 
-    # Assume the restaurant is open if operating hours are not specified.
+    # Assume open if operating hours are not specified.
     if pd.isna(opening_time_str) or pd.isna(closing_time_str):
+        return True
+
+    # FIX: Handle 24-hour restaurants where open and close times are the same.
+    if opening_time_str == closing_time_str:
         return True
 
     try:
@@ -41,14 +45,14 @@ def is_restaurant_open(restaurant_row, current_time_float):
         open_time_float = open_hour + open_min / 60.0
         close_time_float = close_hour + close_min / 60.0
         
-        # Handle the common case where a restaurant closes after midnight.
+        # Handle overnight case.
         if close_time_float < open_time_float:
             return current_time_float >= open_time_float or current_time_float < close_time_float
-        # Handle the standard same-day case.
+        # Handle same-day case.
         else:
             return open_time_float <= current_time_float < close_time_float
     except (ValueError, TypeError):
-        # If time format is incorrect, assume it's open to be safe.
+        # If time format is incorrect, assume it's open.
         return True
 
 def get_current_context():
@@ -56,7 +60,7 @@ def get_current_context():
     day = now.strftime('%A')
     hour = now.hour
     minute = now.minute
-    current_time_float = hour + minute / 60.0 # e.g., 14.5 for 2:30 PM
+    current_time_float = hour + minute / 60.0
 
     if 4.0 <= current_time_float < 7.0: meal_time = "Suhoor"
     elif 7.0 <= current_time_float < 10.0: meal_time = "Breakfast"
@@ -68,7 +72,6 @@ def get_current_context():
     elif 22.0 <= current_time_float < 23.5: meal_time = "Late Dinner"
     else: meal_time = "Midnight Snack"
     
-    # Return all context pieces
     return day, meal_time, current_time_float
 
 def get_meal_count(user_id, interactions_df):
@@ -118,7 +121,7 @@ def create_implicit_ratings(reviews_df):
 
 # --- Scoring Functions ---
 def calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag):
-    day, meal_time = context
+    day, meal_time, _ = context # Unpack the context tuple
     score = 0
     weights = {'distance': 0.3, 'price': 0.2, 'tag': 0.2, 'popularity': 0.1, 'pattern': 0.2}
 
@@ -186,7 +189,6 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: return []
 
-    # --- NEW: Filter candidates by whether they are currently open ---
     open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(current_time_float,), axis=1)]
     if open_candidates.empty:
         print("No open restaurants found among candidates.")
