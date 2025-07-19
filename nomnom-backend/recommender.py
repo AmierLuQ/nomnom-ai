@@ -21,7 +21,9 @@ engine = create_engine(db_url or 'sqlite:///nomnom.db')
 
 # --- Helper & Context Functions ---
 def haversine(lat1, lon1, lat2, lon2):
-    if any(v is None or not isinstance(v, (int, float)) for v in [lat1, lon1, lat2, lon2]): return float('inf')
+    # FIX: Added robust check for valid numeric inputs
+    if any(v is None or not isinstance(v, (int, float)) for v in [lat1, lon1, lat2, lon2]):
+        return float('inf') # Return a large distance if data is invalid
     R = 6371; lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2]); dlon = lon2 - lon1; dlat = lat2 - lat1; a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2; c = 2 * atan2(sqrt(a), sqrt(1 - a)); return R * c
 
 def get_current_context():
@@ -44,9 +46,10 @@ def get_meal_count(user_id, interactions_df):
 
 # --- Feature Engineering ---
 def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
-    """Builds a rich user profile from their meal and interaction history."""
     user_meals = meals_df[meals_df['user_id'] == user_id]
     if user_meals.empty: return {}
+    
+    # FIX: Use a left merge to keep all meals even if restaurant details are missing
     user_meals_details = pd.merge(user_meals, restaurants_df, left_on='restaurant_id', right_on='id', how='left')
     user_meals_details.dropna(subset=['price_min', 'price_max'], inplace=True)
     
@@ -57,100 +60,79 @@ def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
     weekday_meals = user_meals_details[~user_meals_details['day'].isin(['Saturday', 'Sunday'])]
     weekend_meals = user_meals_details[user_meals_details['day'].isin(['Saturday', 'Sunday'])]
     
-    # NEW: Analyze negative feedback
     declined_interactions = interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'decline')]
+    disliked_tags = []
     if not declined_interactions.empty:
         declined_details = pd.merge(declined_interactions, restaurants_df, left_on='restaurant_id', right_on='id', how='left')
         disliked_tags = declined_details[['tag_1', 'tag_2', 'tag_3']].stack().value_counts().nlargest(3).index.tolist()
-    else:
-        disliked_tags = []
 
     profile = {
         'top_tags': user_meals_details[['tag_1', 'tag_2', 'tag_3']].stack().mode().tolist(),
         'disliked_tags': disliked_tags,
         'avg_price': avg_price,
-        'weekday_travel_dist': weekday_meals['distance_travelled'].median() if not weekday_meals.empty else 5.0,
-        'weekend_travel_dist': weekend_meals['distance_travelled'].median() if not weekend_meals.empty else 15.0,
+        'weekday_travel_dist': weekday_meals['distance_travelled'].median() if not weekday_meals.empty and 'distance_travelled' in weekday_meals else 5.0,
+        'weekend_travel_dist': weekend_meals['distance_travelled'].median() if not weekend_meals.empty and 'distance_travelled' in weekend_meals else 15.0,
     }
     return profile
 
 def create_implicit_ratings(reviews_df):
-    """Creates a more nuanced 'implicit_rating' based on multiple feedback signals."""
     df = reviews_df.copy()
-    
     def calculate_score(row):
         score = float(row['rating'])
-        # Boost score for price satisfaction and high frequency
-        if row['price_satisfaction'] == True and pd.notna(row['price_satisfaction']):
-            score += 1.0
-        if pd.notna(row['visit_frequency']) and row['visit_frequency'] > 2:
-            score += 1.0
-        # Penalize for price dissatisfaction
-        if row['price_satisfaction'] == False and pd.notna(row['price_satisfaction']):
-            score -= 0.5
-        return min(7.0, max(1.0, score)) # Clamp score between 1 and 7
-
+        if row.get('price_satisfaction') == True: score += 1.0
+        if pd.notna(row.get('visit_frequency')) and row['visit_frequency'] > 2: score += 1.0
+        if row.get('price_satisfaction') == False: score -= 0.5
+        return min(7.0, max(1.0, score))
     df['implicit_rating'] = df.apply(calculate_score, axis=1)
     return df
 
 # --- Scoring Functions ---
 def calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag):
-    """Calculates a holistic score with dynamic weights and pattern recognition."""
     day, meal_time = context
     score = 0
-    weights = {'distance': 0.3, 'price': 0.2, 'tag': 0.2, 'popularity': 0.1, 'pattern': 0.2} # Base weights
+    weights = {'distance': 0.3, 'price': 0.2, 'tag': 0.2, 'popularity': 0.1, 'pattern': 0.2}
 
-    # 1. Dynamic Distance Score
     is_weekend = day in ['Saturday', 'Sunday']
     expected_dist = user_profile.get('weekend_travel_dist', 15.0) if is_weekend else user_profile.get('weekday_travel_dist', 5.0)
-    if expected_dist > 20: weights['distance'] = 0.2 # User is a traveler, distance is less important
+    if expected_dist > 20: weights['distance'] = 0.2
     actual_dist = haversine(user['latitude'], user['longitude'], restaurant['latitude'], restaurant['longitude'])
-    distance_score = max(0, 1 - (actual_dist / (expected_dist * 2))) # Less harsh penalty for going over
+    distance_score = max(0, 1 - (actual_dist / (expected_dist * 2)))
     score += distance_score * weights['distance']
 
-    # 2. Dynamic Price Score
-    if user_profile.get('avg_price', 0) < 20: weights['price'] = 0.3 # User is price sensitive
+    if user_profile.get('avg_price', 0) < 20: weights['price'] = 0.3
     restaurant_price = (pd.to_numeric(restaurant['price_min'], errors='coerce') + pd.to_numeric(restaurant['price_max'], errors='coerce')) / 2
     if pd.notna(restaurant_price) and user_profile.get('avg_price'):
         price_diff = abs(restaurant_price - user_profile['avg_price']) / user_profile['avg_price']
         price_score = max(0, 1 - price_diff)
         score += price_score * weights['price']
 
-    # 3. Tag Score (Positive and Negative)
     restaurant_tags = set([t for t in [restaurant['tag_1'], restaurant['tag_2'], restaurant['tag_3']] if pd.notna(t)])
     if user_profile.get('top_tags'):
-        profile_tags = set(user_profile['top_tags'])
-        if restaurant_tags.intersection(profile_tags): score += weights['tag']
+        if restaurant_tags.intersection(set(user_profile['top_tags'])): score += weights['tag']
     if user_profile.get('disliked_tags'):
-        disliked_tags = set(user_profile['disliked_tags'])
-        if restaurant_tags.intersection(disliked_tags): score -= 0.3 # Heavy penalty for disliked tags
+        if restaurant_tags.intersection(set(user_profile['disliked_tags'])): score -= 0.3
 
-    # 4. Popularity Score
     popularity = log((restaurant.get('num_google_reviews') or 0) + 1)
     normalized_popularity = min(1, popularity / 7)
     score += normalized_popularity * weights['popularity']
     
-    # 5. Pattern Recognition Score
     if predicted_tag and predicted_tag in restaurant_tags:
-        score += weights['pattern'] # Add bonus if it matches the predicted pattern
+        score += weights['pattern']
 
     return score
 
 # --- Recommendation Models ---
 def recommend_for_new_user(user, restaurants_df, meals_df, exclude_ids=[]):
-    # This model is now enhanced in the main orchestrator, no changes needed here.
-    return recommend_for_active_user(user, restaurants_df, None, None, meals_df, exclude_ids, is_new_user=True)
+    return recommend_for_active_user(user, restaurants_df, pd.DataFrame(), pd.DataFrame(), meals_df, exclude_ids, is_new_user=True)
 
 def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False):
     print(f"Running model for user {user['id']} (New User: {is_new_user})")
     context = get_current_context()
     
-    # Step 1: Feature Engineering
     user_profile = build_user_profile(user['id'], meals_df, restaurants_df, interactions_df)
     
-    # Step 2: Pattern Recognition (for warm-start users)
     predicted_tag = None
-    if not is_new_user:
+    if not is_new_user and not meals_df.empty:
         pattern_model, encoders = train_pattern_recognition_model(user['id'], meals_df, restaurants_df)
         if pattern_model:
             try:
@@ -162,23 +144,23 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
             except Exception as e:
                 print(f"Could not predict tag: {e}")
 
-    # Step 3: Candidate Generation
-    if is_new_user: # Cold-start candidates
+    if is_new_user:
         day, meal_time = context
         popular_now_ids = meals_df[meals_df['meal_time'] == meal_time]['restaurant_id'].value_counts().nlargest(30).index.tolist()
         restaurants_df['distance'] = restaurants_df.apply(lambda row: haversine(user['latitude'], user['longitude'], row['latitude'], row['longitude']), axis=1)
         nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
         candidate_ids = list(dict.fromkeys(popular_now_ids + nearby_ids))
-    else: # Warm-start candidates from SVD
+    else:
         all_seen_ids = set(interactions_df[(interactions_df['user_id'] == user['id'])]['restaurant_id'].unique()) | set(exclude_ids)
         candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
 
-    # Step 4: Scoring and Ranking
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
+    if candidate_details.empty: return []
+    
     scored_recs = []
     for _, restaurant in candidate_details.iterrows():
         score = calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag)
-        scored_recs.append((restaurant['id'], score))
+        scored_cs.append((restaurant['id'], score))
         
     scored_recs.sort(key=lambda x: x[1], reverse=True)
     final_rec_ids = [rec_id for rec_id, score in scored_recs if rec_id not in exclude_ids]
@@ -186,42 +168,32 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
 
 def get_svd_recs(user_id, reviews_df, restaurants_df, all_seen_ids):
     if reviews_df.empty: return []
-    
-    # Use implicit ratings
     implicit_reviews_df = create_implicit_ratings(reviews_df)
-    reader = Reader(rating_scale=(1, 7)) # Adjusted scale
+    reader = Reader(rating_scale=(1, 7))
     data = Dataset.load_from_df(implicit_reviews_df[['user_id', 'restaurant_id', 'implicit_rating']], reader)
     trainset = data.build_full_trainset()
     model = SVD(n_factors=50, n_epochs=20, lr_all=0.005, reg_all=0.02)
     model.fit(trainset)
-    
     unseen_ids = set(restaurants_df['id']) - all_seen_ids
     predictions = [model.predict(user_id, rest_id) for rest_id in unseen_ids]
     predictions.sort(key=lambda x: x.est, reverse=True)
     return [pred.iid for pred in predictions[:50]]
 
 def train_pattern_recognition_model(user_id, meals_df, restaurants_df):
-    """Trains a Decision Tree to learn a user's contextual tag preferences."""
     user_meals = meals_df[meals_df['user_id'] == user_id]
-    if len(user_meals) < 10: return None, None # Not enough data to train
+    if len(user_meals) < 10: return None, None
     
     training_data = pd.merge(user_meals, restaurants_df, left_on='restaurant_id', right_on='id')
     training_data = training_data[['day', 'meal_time', 'tag_1']].dropna()
     if len(training_data) < 10: return None, None
 
-    # Encode categorical features
     encoders = {
         'day': LabelEncoder().fit(training_data['day']),
         'meal_time': LabelEncoder().fit(training_data['meal_time']),
         'tag': LabelEncoder().fit(training_data['tag_1'])
     }
-    
-    X = pd.DataFrame({
-        'day': encoders['day'].transform(training_data['day']),
-        'meal_time': encoders['meal_time'].transform(training_data['meal_time'])
-    })
+    X = pd.DataFrame({'day': encoders['day'].transform(training_data['day']), 'meal_time': encoders['meal_time'].transform(training_data['meal_time'])})
     y = encoders['tag'].transform(training_data['tag_1'])
-    
     model = DecisionTreeClassifier(random_state=42)
     model.fit(X, y)
     return model, encoders
@@ -238,11 +210,24 @@ def get_recommendations(user_id, exclude_ids=[]):
         current_user = users_df[users_df['id'] == user_id].iloc[0].to_dict()
     except IndexError: return []
 
-    # Pre-calculate distance travelled for all meals
     if not meals_df.empty:
-        meals_with_loc = pd.merge(meals_df, users_df[['id', 'latitude', 'longitude']], left_on='user_id', right_on='id')
-        meals_with_loc = pd.merge(meals_with_loc, restaurants_df[['id', 'latitude', 'longitude']], left_on='restaurant_id', right_on='id', suffixes=('_user', '_rest'))
-        meals_df['distance_travelled'] = meals_with_loc.apply(lambda row: haversine(row['latitude_user'], row['longitude_user'], row['latitude_rest'], row['longitude_rest']), axis=1)
+        # FIX: Use left merges to prevent data loss if a user/restaurant is missing
+        meals_with_loc = pd.merge(meals_df, users_df[['id', 'latitude', 'longitude']], left_on='user_id', right_on='id', how='left')
+        meals_with_loc = pd.merge(meals_with_loc, restaurants_df[['id', 'latitude', 'longitude']], left_on='restaurant_id', right_on='id', how='left', suffixes=('_user', '_rest'))
+        # Drop rows where location data is incomplete after merging
+        meals_with_loc.dropna(subset=['latitude_user', 'longitude_user', 'latitude_rest', 'longitude_rest'], inplace=True)
+        
+        if not meals_with_loc.empty:
+            # Create a temporary column for merging back
+            meals_with_loc['temp_id'] = meals_with_loc['id_user'].astype(str) + '_' + meals_with_loc['id_rest'].astype(str)
+            meals_df['temp_id'] = meals_df['user_id'].astype(str) + '_' + meals_df['restaurant_id'].astype(str)
+            
+            distances = meals_with_loc.apply(lambda row: haversine(row['latitude_user'], row['longitude_user'], row['latitude_rest'], row['longitude_rest']), axis=1)
+            distance_map = pd.Series(distances.values, index=meals_with_loc['temp_id'])
+            
+            meals_df['distance_travelled'] = meals_df['temp_id'].map(distance_map)
+            meals_df.drop(columns=['temp_id'], inplace=True)
+
 
     meal_count = get_meal_count(user_id, interactions_df)
     
