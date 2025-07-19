@@ -68,8 +68,8 @@ def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
         'top_tags': user_meals_details[['tag_1', 'tag_2', 'tag_3']].stack().mode().tolist(),
         'disliked_tags': disliked_tags,
         'avg_price': avg_price,
-        'weekday_travel_dist': weekday_meals['distance_travelled'].median() if not weekday_meals.empty and 'distance_travelled' in weekday_meals else 5.0,
-        'weekend_travel_dist': weekend_meals['distance_travelled'].median() if not weekend_meals.empty and 'distance_travelled' in weekend_meals else 15.0,
+        'weekday_travel_dist': weekday_meals['distance_travelled'].median() if not weekday_meals.empty and 'distance_travelled' in weekday_meals.columns else 5.0,
+        'weekend_travel_dist': weekend_meals['distance_travelled'].median() if not weekend_meals.empty and 'distance_travelled' in weekend_meals.columns else 15.0,
     }
     return profile
 
@@ -148,12 +148,16 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
         restaurants_df['distance'] = restaurants_df.apply(lambda row: haversine(user['latitude'], user['longitude'], row['latitude'], row['longitude']), axis=1)
         nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
         candidate_ids = list(dict.fromkeys(popular_now_ids + nearby_ids))
+        print(f"Cold-start generated {len(candidate_ids)} candidates.")
     else:
         all_seen_ids = set(interactions_df[(interactions_df['user_id'] == user['id'])]['restaurant_id'].unique()) | set(exclude_ids)
         candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
+        print(f"Warm-start (SVD) generated {len(candidate_ids)} candidates.")
 
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
-    if candidate_details.empty: return []
+    if candidate_details.empty: 
+        print("No candidate details found. Returning empty list.")
+        return []
     
     scored_recs = []
     for _, restaurant in candidate_details.iterrows():
@@ -163,6 +167,7 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
         
     scored_recs.sort(key=lambda x: x[1], reverse=True)
     final_rec_ids = [rec_id for rec_id, score in scored_recs if rec_id not in exclude_ids]
+    print(f"Returning {len(final_rec_ids)} final recommendations.")
     return final_rec_ids[:15]
 
 def get_svd_recs(user_id, reviews_df, restaurants_df, all_seen_ids):
@@ -199,6 +204,7 @@ def train_pattern_recognition_model(user_id, meals_df, restaurants_df):
 
 # --- Main Orchestrator ---
 def get_recommendations(user_id, exclude_ids=[]):
+    print("\n--- Starting new recommendation request ---")
     users_df = pd.read_sql_table('user', engine)
     reviews_df = pd.read_sql_table('review', engine)
     restaurants_df = pd.read_sql_table('restaurant', engine)
@@ -207,7 +213,9 @@ def get_recommendations(user_id, exclude_ids=[]):
     
     try:
         current_user = users_df[users_df['id'] == user_id].iloc[0].to_dict()
-    except IndexError: return []
+    except IndexError: 
+        print(f"User {user_id} not found.")
+        return []
 
     if not meals_df.empty:
         meals_with_loc = pd.merge(meals_df, users_df[['id', 'latitude', 'longitude']], left_on='user_id', right_on='id', how='left')
@@ -215,14 +223,15 @@ def get_recommendations(user_id, exclude_ids=[]):
         meals_with_loc.dropna(subset=['latitude_user', 'longitude_user', 'latitude_rest', 'longitude_rest'], inplace=True)
         
         if not meals_with_loc.empty:
-            meals_with_loc['temp_id'] = meals_with_loc['id_user'].astype(str) + '_' + meals_with_loc['id_rest'].astype(str)
-            meals_df['temp_id'] = meals_df['user_id'].astype(str) + '_' + meals_df['restaurant_id'].astype(str)
+            # Using a more robust merge key
+            meals_with_loc['merge_key'] = meals_with_loc['id_user'].astype(str) + "_" + meals_with_loc['id_rest'].astype(str)
+            distance_map = meals_with_loc.set_index('merge_key')['distance'] = meals_with_loc.apply(
+                lambda row: haversine(row['latitude_user'], row['longitude_user'], row['latitude_rest'], row['longitude_rest']), axis=1
+            )
             
-            distances = meals_with_loc.apply(lambda row: haversine(row['latitude_user'], row['longitude_user'], row['latitude_rest'], row['longitude_rest']), axis=1)
-            distance_map = pd.Series(distances.values, index=meals_with_loc['temp_id'])
-            
-            meals_df['distance_travelled'] = meals_df['temp_id'].map(distance_map)
-            meals_df.drop(columns=['temp_id'], inplace=True)
+            meals_df['merge_key'] = meals_df['user_id'].astype(str) + "_" + meals_df['restaurant_id'].astype(str)
+            meals_df['distance_travelled'] = meals_df['merge_key'].map(distance_map)
+            meals_df.drop(columns=['merge_key'], inplace=True)
 
     meal_count = get_meal_count(user_id, interactions_df)
     
