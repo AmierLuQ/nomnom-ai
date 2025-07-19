@@ -44,6 +44,11 @@
     cursor: pointer;
     padding: 5px;
     z-index: 2;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+.profile-edit-button:hover, .profile-back-button:hover {
+    color: #41EAD4;
+    transform: scale(1.1);
 }
 
 /* ==================== Main Content ==================== */
@@ -179,6 +184,21 @@
     font-weight: bold;
 }
 
+.history-item-details {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.history-item-mealtime {
+    background-color: #41EAD4;
+    color: #011627;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
 .history-item-date {
     font-size: 12px;
     opacity: 0.6;
@@ -195,11 +215,18 @@
     font-style: italic;
 }
 
-/* Logout Button */
-.profile-logout-button {
-    background-color: #FC3B48;
+/* Action Buttons */
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.profile-action-button, .profile-logout-button {
     color: #FDFFFC;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     padding: 16px;
     font-size: 16px;
@@ -210,9 +237,16 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-top: 10px;
+}
+.profile-logout-button {
+    background-color: #FC3B48;
+    border-color: #FC3B48;
 }
 
+.profile-action-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+}
 .profile-logout-button:hover {
     background-color: #e02d39;
     transform: scale(1.02);
@@ -280,14 +314,25 @@
     color: #41EAD4;
 }
 
-.modal-input-group input {
+.modal-input-group input,
+.modal-input-group select {
     background-color: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
     padding: 12px;
     color: #FDFFFC;
     font-size: 16px;
+    font-family: "DM Sans", sans-serif;
 }
+.modal-input-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
 
 .modal-save-button {
     background-color: #FF7E21;

@@ -1,4 +1,8 @@
-/* ==================== Base Container ==================== */
+/* ==========================================================================
+   LoginPage.css
+   ========================================================================== */
+
+/* ==================== Base Container & Layout ==================== */
 .login-auth-container {
   background-image: linear-gradient(#011627, #010813, #010813);
   min-height: 100vh;
@@ -56,7 +60,7 @@
   margin-bottom: 24px;
 }
 
-/* ==================== Form Body ==================== */
+/* ==================== Form Body & Input Fields ==================== */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -78,7 +82,6 @@
   display: block;
 }
 
-/* ==================== Input Fields ==================== */
 .login-form-input {
   background-color: #011627;
   color: #FDFFFC;
@@ -108,7 +111,7 @@
   transform: translateY(-10px);
 }
 
-/* ==================== Buttons ==================== */
+/* ==================== Buttons & Links ==================== */
 .login-btn {
   background-color: #FF7E21;
   color: #011627;
@@ -130,7 +133,6 @@
   transform: scale(1.05);
 }
 
-/* ==================== Links ==================== */
 .login-forgot-link {
   font-family: "DM Sans Bold", sans-serif;
   display: block;
@@ -161,18 +163,7 @@
   cursor: pointer;
 }
 
-/* ==================== Footer ==================== */
-.login-form-footer {
-  font-family: "DM Sans", sans-serif;
-  margin-top: 32px;
-  margin-bottom: 80px;
-  text-align: center;
-  font-size: 12px;
-  color: #FDFFFC;
-  opacity: 0.5;
-}
-
-/* ================== Potato Button ================== */
+/* ==================== Utility Buttons ==================== */
 .login-potato-button {
   position: absolute;
   top: 10px;
@@ -194,4 +185,15 @@
 .login-potato-button:hover {
   background-color: #FC3B48;
   transform: scale(1.05);
+}
+
+/* ==================== Footer ==================== */
+.login-form-footer {
+  font-family: "DM Sans", sans-serif;
+  margin-top: 32px;
+  margin-bottom: 80px;
+  text-align: center;
+  font-size: 12px;
+  color: #FDFFFC;
+  opacity: 0.5;
 }

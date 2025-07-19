@@ -1,4 +1,8 @@
-/* ==================== Base Container ==================== */
+/* ==========================================================================
+   HomePage.css
+   ========================================================================== */
+
+/* ==================== Base Container & Layout ==================== */
 .home-container {
   background-image: linear-gradient(#011627, #011627, #010813);
   min-height: 100vh;
@@ -11,13 +15,377 @@
   overflow: hidden; /* Prevent horizontal scroll from swipe animations */
 }
 
-/* ==================== NEW: Status Screens Styling ==================== */
+/* ==================== Header & User Info ==================== */
+.home-header {
+  width: 100%;
+  max-width: 430px; /* Match the image box width */
+  margin-top: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.home-logo {
+  width: auto;
+  height: 60px;
+  object-fit: contain;
+}
+
+.home-user-info {
+  transform: translateY(4px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-welcome-text {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: #FDFFFC;
+  opacity: 0.9;
+}
+
+.home-profile-button {
+  background: none;
+  border: none;
+  color: #FDFFFC;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.home-profile-button:hover {
+  color: #41EAD4;
+  transform: scale(1.1);
+}
+
+/* ==================== Main Recommendation Card ==================== */
+.home-image-box {
+  position: relative;
+  width: 430px;
+  max-width: 430px;
+  max-height: 645px;
+  aspect-ratio: 2 / 3;
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transition: all 0.5s ease-in-out;
+  flex-grow: 1;
+}
+
+.home-image-box.expanded {
+  justify-content: flex-start;
+}
+
+.home-restaurant-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.home-image-gradient {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 33%;
+  background: linear-gradient(to top, #011627e6, #011627b3, #01162700);
+  z-index: 2;
+  transition: height 0.5s ease-in-out, background 0.8s ease-in-out;
+}
+
+.home-image-box.expanded .home-image-gradient {
+  height: 120%;
+  background: linear-gradient(to top, #011627e6, #011627b3, #01162786, #01162700);
+}
+
+/* ==================== Card Content Overlay ==================== */
+.home-image-content {
+  position: relative;
+  z-index: 3;
+  padding: 20px;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.home-image-box.expanded .home-image-content {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.home-top-info-container {
+  display: flex;
+  margin-top: auto;
+  flex-direction: column;
+  width: 100%;
+  transform: translateY(-100px);
+  pointer-events: auto; 
+  transition: transform 0.4s ease-in-out;
+}
+
+.home-image-box.expanded .home-top-info-container {
+  transform: translateY(-500px);
+}
+
+.home-name-rating-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  margin-bottom: -6px;
+}
+
+.home-image-box.expanded .home-name-rating-container {
+  align-items: baseline;
+}
+
+.home-restaurant-name {
+  font-family: "Inter", sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: left;
+  flex-grow: 1;
+  margin-right: 16px;
+  line-height: 1;
+  text-shadow: 0px 0px 4px #00000080;
+}
+
+.home-restaurant-rating {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  text-align: right;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 32px;
+  text-shadow: 0px 0px 4px #00000080;
+}
+.home-restaurant-rating svg {
+  vertical-align: middle;
+}
+
+/* --- Tags & Price Pills --- */
+.home-pill-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 32px;
+  margin-top: 0px;
+  justify-content: space-between;
+}
+
+.home-pill-box {
+  color: #011627;
+  background-color: #FDFFFC;
+  font-family: "DM Sans", sans-serif;
+  font-weight: bold;
+  font-size: 10px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-grow: 1;
+  flex-basis: auto;
+  text-align: center;
+  min-width: 20px;
+  box-sizing: border-box;
+  height: fit-content;
+}
+
+.home-pill-box.home-tag {
+  background-color: #41EAD4;
+}
+
+.home-pill-box.home-price {
+  background-color: #FF7E21;
+}
+
+.home-image-box.expanded .home-pill-box.home-price {
+  display: none;
+}
+
+/* ==================== Expanded Details View ==================== */
+.home-details-container {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(600px);
+  transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out, transform 0.4s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  color: #FDFFFC;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  width: calc(100% - 40px);
+  max-height: 400px;
+  pointer-events: none;
+  overflow-y: hidden;
+  box-sizing: border-box;
+  top: 120px;
+}
+
+.home-details-container.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.home-map-placeholder {
+  width: 100%;
+  height: 180px;
+  background-color: rgba(1, 22, 39, 0.7);
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #FDFFFC;
+  font-size: 14px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  margin-bottom: 10px;
+}
+.home-map-placeholder p {
+  margin-top: 8px;
+}
+
+.home-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.home-info-row svg {
+  align-self: center;
+  width: 16px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.home-info-row .home-status-open {
+  color: #4CAF50;
+  font-weight: bold;
+}
+.home-info-row .home-status-closed {
+  color: #FC3B48;
+  font-weight: bold;
+}
+
+/* ==================== Action Buttons & Indicators ==================== */
+.home-bottom-fixed {
+  width: 90%;
+  pointer-events: auto;
+  position: absolute;
+  bottom: 0;
+  padding: 0px;
+}
+
+.home-button-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.home-action-button {
+  background-color: #fdfffc;
+  border: 4px solid;
+  border-radius: 50%;
+  width: 72px;
+  height: 72px;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.home-action-button.home-skip {
+  border-color: #FC3B48;
+  color: #FC3B48;
+  width: 80px;
+  height: 80px;
+  font-size: 48px;
+}
+.home-action-button.home-undo {
+  border-color: #41EAD4;
+  color: #41EAD4;
+}
+.home-action-button.home-favorite {
+  border-color: #ff219b;
+  color: #ff219b;
+}
+.home-action-button.home-eat {
+  border-color: #4CAF50;
+  color: #4CAF50;
+  width: 80px;
+  height: 80px;
+  font-size: 40px;
+}
+
+.home-action-button:hover,
+.home-action-button:active {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+.home-swipe-indicator-bottom {
+  margin-top: 8px;
+  font-size: 24px;
+  color: #FDFFFC;
+  opacity: 0.5;
+  cursor: pointer;
+  animation: bounce 1.5s infinite;
+  pointer-events: auto;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ==================== Status Screens (Loading, Finished) ==================== */
 .status-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-grow: 1; /* Take up all available vertical space */
+  flex-grow: 1;
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
@@ -48,7 +416,6 @@
   opacity: 0.8;
 }
 
-/* Specific styling for the "Finished" screen */
 .finished-container .finished-header {
   font-family: "Inter", sans-serif;
   font-size: 2rem;
@@ -77,353 +444,7 @@
   transform: scale(1.05);
 }
 
-
-/* ==================== Header ==================== */
-.home-header {
-  width: 100%;
-  max-width: 430px; /* Match the image box width */
-  margin-top: 10px;
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: space-between; /* MODIFIED: Space out logo and user info */
-  align-items: center;
-  padding: 0 20px; /* Add some horizontal padding */
-  box-sizing: border-box;
-}
-
-.home-logo {
-  width: auto;
-  height: 60px; /* Set a fixed px height for mobile */
-  object-fit: contain;
-}
-
-.home-user-info {
-  transform: translateY(4px);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.home-welcome-text {
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  color: #FDFFFC;
-  opacity: 0.9;
-}
-
-/* --- REMOVED: Logout Button Styles --- */
-/* .home-logout-button was here */
-
-.home-profile-button {
-  background: none;
-  border: none;
-  color: #FDFFFC;
-  font-size: 24px; /* Adjust size as needed */
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.3s ease, transform 0.2s ease;
-}
-
-.home-profile-button:hover {
-  color: #41EAD4; /* Highlight color on hover */
-  transform: scale(1.1);
-}
-
-/* Adjust the user info container to accommodate the new button */
-.home-user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px; /* This will apply spacing between all items */
-}
-
-
-/* ==================== Image Box ==================== */
-.home-image-box {
-  position: relative;
-  width: 430px;
-  max-width: 430px;
-  max-height: 645px;
-  aspect-ratio: 2 / 3;
-  border-radius: 25px;
-  overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  transition: all 0.5s ease-in-out;
-  flex-grow: 1;
-}
-
-/* ... (rest of your CSS file is unchanged) ... */
-.home-image-box.expanded {
-  flex-grow: 1;
-  justify-content: flex-start;
-}
-.home-restaurant-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
-}
-.home-image-gradient {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 33%;
-  background: linear-gradient(to top, #011627e6, #011627b3, #01162700);
-  z-index: 2;
-  transition: height 0.5s ease-in-out, background 0.8s ease-in-out;
-}
-.home-image-box.expanded .home-image-gradient {
-  height: 120%;
-  background: linear-gradient(to top, #011627e6, #011627b3, #01162786, #01162700);
-}
-.home-image-content {
-  position: relative;
-  z-index: 3;
-  padding: 20px;
-  padding-bottom: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box;
-  pointer-events: none;
-  overflow: hidden;
-}
-.home-image-box.expanded .home-image-content {
-  justify-content: space-between;
-  align-items: flex-start;
-  overflow-y: hidden;
-}
-.home-top-info-container {
-  display: flex;
-  position-anchor: top;
-  margin-top: auto;
-  flex-direction: column;
-  width: 100%;
-  transform: translateY(-100px);
-  pointer-events: auto; 
-  transition: transform 0.4s ease-in-out;
-}
-.home-image-box.expanded .home-top-info-container {
-  transform: translateY(-500px);
-}
-.home-name-rating-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 100%;
-  margin-bottom: -6px;
-}
-.home-image-box.expanded .home-name-rating-container {
-  align-items: baseline;
-}
-.home-restaurant-name {
-  font-family: "Inter", sans-serif;
-  font-size: 24px;
-  font-weight: bold;
-  text-align: left;
-  flex-grow: 1;
-  margin-right: 16px;
-  line-height: 1;
-  text-shadow: 0px 0px 4px #00000080;
-}
-.home-restaurant-rating {
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  font-weight: normal;
-  text-align: right;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  line-height: 32px;
-  text-shadow: 0px 0px 4px #00000080;
-}
-.home-restaurant-rating svg {
-  vertical-align: middle;
-}
-.home-pill-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  width: 100%;
-  margin-bottom: 32px;
-  margin-top: 0px;
-  justify-content: space-between;
-}
-.home-pill-box {
-  color: #011627;
-  background-color: #FDFFFC;
-  font-family: "DM Sans", sans-serif;
-  font-weight: bold;
-  font-size: 10px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  white-space: nowrap;
-  flex-grow: 1;
-  flex-basis: auto;
-  text-align: center;
-  min-width: 20px;
-  box-sizing: border-box;
-  height: fit-content;
-}
-.home-pill-box.home-tag {
-  background-color: #41EAD4;
-}
-.home-pill-box.home-price {
-  background-color: #FF7E21;
-}
-.home-image-box.expanded .home-pill-box.home-price {
-  display: none;
-}
-.home-details-container {
-  position: absolute;
-  top: 0;
-  left: 20px;
-  right: 20px;
-  bottom: 8px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(600px);
-  transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out, transform 0.4s ease-in-out;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  text-align: left;
-  color: #FDFFFC;
-  font-family: "DM Sans", sans-serif;
-  font-size: 12px;
-  width: calc(100% - 40px);
-  max-height: 400px;
-  pointer-events: none;
-  overflow-y: hidden;
-  box-sizing: border-box;
-  top: 120px;
-}
-.home-details-container.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-.home-map-placeholder {
-  width: 100%;
-  height: 180px;
-  background-color: rgba(1, 22, 39, 0.7);
-  border-radius: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #FDFFFC;
-  font-size: 14px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  margin-bottom: 10px;
-}
-.home-map-placeholder p {
-  margin-top: 8px;
-}
-.home-info-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  font-size: 14px;
-  line-height: 1.4;
-}
-.home-info-row svg {
-  align-self: center;
-  width: 16px;
-  height: auto;
-  flex-shrink: 0;
-}
-.home-info-row .home-status-open {
-  color: #4CAF50;
-  font-weight: bold;
-}
-.home-info-row .home-status-closed {
-  color: #FC3B48;
-  font-weight: bold;
-}
-.home-bottom-fixed {
-  width: 90%;
-  pointer-events: auto;
-  position: absolute;
-  bottom: 0;
-  padding: 0px;
-}
-.home-button-group {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-.home-action-button {
-  background-color: #fdfffc;
-  border: 4px solid;
-  border-radius: 50%;
-  width: 72px;
-  height: 72px;
-  font-size: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s ease, transform 0.2s ease, filter 0.2s ease;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-.home-action-button.home-skip {
-  border-color: #FC3B48;
-  color: #FC3B48;
-  width: 80px;
-  height: 80px;
-  font-size: 48px;
-}
-.home-action-button.home-undo {
-  border-color: #41EAD4;
-  color: #41EAD4;
-}
-.home-action-button.home-favorite {
-  border-color: #ff219b;
-  color: #ff219b;
-}
-.home-action-button.home-eat {
-  border-color: #4CAF50;
-  color: #4CAF50;
-  width: 80px;
-  height: 80px;
-  font-size: 40px;
-}
-.home-action-button:hover,
-.home-action-button:active {
-  transform: scale(1.1);
-  filter: brightness(1.2);
-}
-.home-swipe-indicator-bottom {
-  margin-top: 8px;
-  font-size: 24px;
-  color: #FDFFFC;
-  opacity: 0.5;
-  cursor: pointer;
-  animation: bounce 1.5s infinite;
-  pointer-events: auto;
-}
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
+/* ==================== Footer ==================== */
 .home-footer {
   font-family: "DM Sans", sans-serif;
   margin-top: 64px;

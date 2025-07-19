@@ -25,18 +25,14 @@ app = Flask(__name__)
 CORS(app)
 
 # --- Database Configuration ---
-# Get the database URL from environment variables for production
 db_url = os.environ.get('DATABASE_URL')
-# Adjust the URL prefix for SQLAlchemy if it's a Render Postgres URL
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
-# Use the production URL or fall back to a local SQLite database for development
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///nomnom.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- JWT Configuration ---
-# The secret key is used to sign the JWTs for security
-app.config['JWT_SECRET_KEY'] = 'super-secret-key' # In production, this should be a more complex secret stored as an environment variable
+app.config['JWT_SECRET_KEY'] = 'super-secret-key'
 
 # =======================================================================
 # Initialize Extensions
@@ -178,7 +174,7 @@ def user_profile():
         user_id = get_jwt_identity()
         user = User.query.filter_by(id=user_id).first()
         if not user: return jsonify({'message': 'User not found'}), 404
-        user_info = {'username': user.username, 'email': user.email, 'name': user.name, 'age': user.age, 'phone': user.phone}
+        user_info = {'username': user.username, 'email': user.email, 'name': user.name, 'age': user.age, 'phone': user.phone, 'gender': user.gender, 'location': user.location}
         meals = Meal.query.filter_by(user_id=user_id).all()
         reviews = Review.query.filter_by(user_id=user_id).all()
         total_meals = len(meals)
@@ -191,8 +187,18 @@ def user_profile():
                 tag_counts = pd.Series([tag for row in tags for tag in row if tag]).value_counts()
                 if not tag_counts.empty: favorite_cuisine = tag_counts.index[0]
         stats = {'total_meals': total_meals, 'average_rating': avg_rating, 'favorite_cuisine': favorite_cuisine}
-        recent_meals_query = db.session.query(Meal, Restaurant.name, Review.rating).join(Restaurant, Meal.restaurant_id == Restaurant.id).outerjoin(Review, (Review.user_id == Meal.user_id) & (Review.restaurant_id == Meal.restaurant_id)).filter(Meal.user_id == user_id).order_by(Meal.date.desc()).limit(5).all()
-        recent_meals = [{'meal_id': meal.id, 'restaurant_name': name, 'date': meal.date.isoformat(), 'rating': rating} for meal, name, rating in recent_meals_query]
+        
+        # FIX: Fetch the most recent review for each restaurant, not tied to meal date
+        recent_meals_query = db.session.query(Meal, Restaurant.name).join(Restaurant, Meal.restaurant_id == Restaurant.id).filter(Meal.user_id == user_id).order_by(Meal.date.desc()).limit(5).all()
+        recent_meals = []
+        for meal, name in recent_meals_query:
+            latest_review = Review.query.filter_by(user_id=user_id, restaurant_id=meal.restaurant_id).order_by(Review.date.desc()).first()
+            recent_meals.append({
+                'meal_id': meal.id, 'restaurant_name': name, 'date': meal.date.isoformat(), 
+                'meal_time': meal.meal_time, # ADDED: Meal time
+                'rating': latest_review.rating if latest_review else None
+            })
+            
         return jsonify({'user_info': user_info, 'stats': stats, 'recent_meals': recent_meals}), 200
     except Exception as e:
         print(f"❌ Error in /api/profile: {e}")
@@ -201,7 +207,7 @@ def user_profile():
 @app.route('/api/profile/update', methods=['POST'])
 @jwt_required()
 def update_user_profile():
-    """Updates the name and phone number for the currently logged-in user."""
+    """Updates profile information for the currently logged-in user."""
     try:
         user_id = get_jwt_identity()
         user = User.query.filter_by(id=user_id).first()
@@ -209,13 +215,42 @@ def update_user_profile():
         data = request.get_json()
         user.name = data.get('name', user.name)
         user.phone = data.get('phone', user.phone)
+        user.gender = data.get('gender', user.gender)
+        user.location = data.get('location', user.location)
+        # Add logic to update lat/lon if location changes, possibly via a geocoding API
         db.session.commit()
-        updated_user_info = {'username': user.username, 'email': user.email, 'name': user.name, 'age': user.age, 'phone': user.phone}
+        updated_user_info = {'username': user.username, 'email': user.email, 'name': user.name, 'age': user.age, 'phone': user.phone, 'gender': user.gender, 'location': user.location}
         return jsonify({'message': 'Profile updated successfully!', 'user': updated_user_info}), 200
     except Exception as e:
         db.session.rollback()
         print(f"❌ Error in /api/profile/update: {e}")
         return jsonify({'message': 'Server error updating profile'}), 500
+
+# --- NEW: Endpoint to change password ---
+@app.route('/api/profile/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    """Changes the password for the currently logged-in user."""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+        if not user: return jsonify({'message': 'User not found'}), 404
+
+        data = request.get_json()
+        current_password = data.get('currentPassword')
+        new_password = data.get('newPassword')
+
+        if not bcrypt.check_password_hash(user.password, current_password):
+            return jsonify({'message': 'Current password is incorrect'}), 401
+
+        user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+        db.session.commit()
+        
+        return jsonify({'message': 'Password updated successfully!'}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Error in /api/profile/change-password: {e}")
+        return jsonify({'message': 'Server error changing password'}), 500
 
 # -----------------------------------------------------------------------
 # Restaurant & Recommendation Endpoints
@@ -235,14 +270,11 @@ def get_restaurants():
 @app.route('/api/recommend', methods=['POST'])
 @jwt_required()
 def recommend():
-    """
-    Returns a personalized list of restaurant recommendations for the user.
-    Accepts a list of 'exclude_ids' in the JSON body to support infinite scroll.
-    """
+    """Returns a personalized list of restaurant recommendations for the user."""
     try:
         user_id = get_jwt_identity()
         data = request.get_json(); exclude_ids = data.get('exclude_ids', [])
-        exclude_ids.append('RST_901') # Always exclude "Home Cooked"
+        exclude_ids.append('RST_901')
         recommended_ids = get_recommendations(user_id, exclude_ids=exclude_ids)
         if not recommended_ids:
             return jsonify({'user_id': user_id, 'recommendations': []}), 200
@@ -272,7 +304,4 @@ def debug_config():
 # Main Execution
 # =======================================================================
 if __name__ == '__main__':
-    # This block runs the app when the script is executed directly
-    # (e.g., `python app.py`). The `debug=True` flag enables
-    # auto-reloading and provides detailed error pages during development.
     app.run(debug=True)

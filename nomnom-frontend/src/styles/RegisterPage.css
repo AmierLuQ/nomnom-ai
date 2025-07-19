@@ -1,4 +1,8 @@
-/* ==================== Base Container ==================== */
+/* ==========================================================================
+   RegisterPage.css
+   ========================================================================== */
+
+/* ==================== Base Container & Layout ==================== */
 .register-auth-container {
   background-image: linear-gradient(#011627, #010813, #010813);
   min-height: 932px;
@@ -56,7 +60,7 @@
   margin-bottom: 24px;
 }
 
-/* ==================== Form Body ==================== */
+/* ==================== Form Body & Input Fields ==================== */
 .register-form {
   display: flex;
   flex-direction: column;
@@ -70,7 +74,7 @@
   transform: translateX(-10px);
 }
 
-.register-form-label{
+.register-form-label {
   font-family: "Inter Bold", sans-serif;
   font-size: 12px;
   font-weight: bold;
@@ -78,7 +82,6 @@
   display: block;
 }
 
-/* ==================== Input Fields ==================== */
 .register-form-input {
   background-color: #011627;
   color: #FDFFFC;
@@ -112,7 +115,7 @@
   transform: translateY(-10px);
 }
 
-/* ==================== Buttons ==================== */
+/* ==================== Buttons & Links ==================== */
 .register-btn {
   background-color: #FF7E21;
   color: #011627;
@@ -134,7 +137,6 @@
   transform: scale(1.05);
 }
 
-/* ==================== Links ==================== */
 .register-text {
   font-family: "DM Sans", sans-serif;
   text-align: center;
