@@ -9,3 +9,4 @@ openpyxl
 python-dotenv
 psycopg2-binary
 scikit-learn
+scikit-surprise
