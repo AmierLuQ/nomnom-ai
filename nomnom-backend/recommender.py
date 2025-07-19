@@ -21,9 +21,8 @@ engine = create_engine(db_url or 'sqlite:///nomnom.db')
 
 # --- Helper & Context Functions ---
 def haversine(lat1, lon1, lat2, lon2):
-    # FIX: Added robust check for valid numeric inputs
     if any(v is None or not isinstance(v, (int, float)) for v in [lat1, lon1, lat2, lon2]):
-        return float('inf') # Return a large distance if data is invalid
+        return float('inf')
     R = 6371; lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2]); dlon = lon2 - lon1; dlat = lat2 - lat1; a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2; c = 2 * atan2(sqrt(a), sqrt(1 - a)); return R * c
 
 def get_current_context():
@@ -49,7 +48,6 @@ def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
     user_meals = meals_df[meals_df['user_id'] == user_id]
     if user_meals.empty: return {}
     
-    # FIX: Use a left merge to keep all meals even if restaurant details are missing
     user_meals_details = pd.merge(user_meals, restaurants_df, left_on='restaurant_id', right_on='id', how='left')
     user_meals_details.dropna(subset=['price_min', 'price_max'], inplace=True)
     
@@ -160,7 +158,8 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
     scored_recs = []
     for _, restaurant in candidate_details.iterrows():
         score = calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag)
-        scored_cs.append((restaurant['id'], score))
+        # FIX: Corrected the variable name from scored_cs to scored_recs
+        scored_recs.append((restaurant['id'], score))
         
     scored_recs.sort(key=lambda x: x[1], reverse=True)
     final_rec_ids = [rec_id for rec_id, score in scored_recs if rec_id not in exclude_ids]
@@ -211,14 +210,11 @@ def get_recommendations(user_id, exclude_ids=[]):
     except IndexError: return []
 
     if not meals_df.empty:
-        # FIX: Use left merges to prevent data loss if a user/restaurant is missing
         meals_with_loc = pd.merge(meals_df, users_df[['id', 'latitude', 'longitude']], left_on='user_id', right_on='id', how='left')
         meals_with_loc = pd.merge(meals_with_loc, restaurants_df[['id', 'latitude', 'longitude']], left_on='restaurant_id', right_on='id', how='left', suffixes=('_user', '_rest'))
-        # Drop rows where location data is incomplete after merging
         meals_with_loc.dropna(subset=['latitude_user', 'longitude_user', 'latitude_rest', 'longitude_rest'], inplace=True)
         
         if not meals_with_loc.empty:
-            # Create a temporary column for merging back
             meals_with_loc['temp_id'] = meals_with_loc['id_user'].astype(str) + '_' + meals_with_loc['id_rest'].astype(str)
             meals_df['temp_id'] = meals_df['user_id'].astype(str) + '_' + meals_df['restaurant_id'].astype(str)
             
@@ -227,7 +223,6 @@ def get_recommendations(user_id, exclude_ids=[]):
             
             meals_df['distance_travelled'] = meals_df['temp_id'].map(distance_map)
             meals_df.drop(columns=['temp_id'], inplace=True)
-
 
     meal_count = get_meal_count(user_id, interactions_df)
     
