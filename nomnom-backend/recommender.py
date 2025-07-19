@@ -58,11 +58,12 @@ def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
     weekday_meals = user_meals_details[~user_meals_details['day'].isin(['Saturday', 'Sunday'])]
     weekend_meals = user_meals_details[user_meals_details['day'].isin(['Saturday', 'Sunday'])]
     
-    declined_interactions = interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'decline')]
     disliked_tags = []
-    if not declined_interactions.empty:
-        declined_details = pd.merge(declined_interactions, restaurants_df, left_on='restaurant_id', right_on='id', how='left')
-        disliked_tags = declined_details[['tag_1', 'tag_2', 'tag_3']].stack().value_counts().nlargest(3).index.tolist()
+    if not interactions_df.empty:
+        declined_interactions = interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'decline')]
+        if not declined_interactions.empty:
+            declined_details = pd.merge(declined_interactions, restaurants_df, left_on='restaurant_id', right_on='id', how='left')
+            disliked_tags = declined_details[['tag_1', 'tag_2', 'tag_3']].stack().value_counts().nlargest(3).index.tolist()
 
     profile = {
         'top_tags': user_meals_details[['tag_1', 'tag_2', 'tag_3']].stack().mode().tolist(),
@@ -158,6 +159,7 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
     scored_recs = []
     for _, restaurant in candidate_details.iterrows():
         score = calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag)
+        # FIX: Corrected the variable name from scored_cs to scored_recs
         scored_recs.append((restaurant['id'], score))
         
     scored_recs.sort(key=lambda x: x[1], reverse=True)
@@ -208,24 +210,19 @@ def get_recommendations(user_id, exclude_ids=[]):
         current_user = users_df[users_df['id'] == user_id].iloc[0].to_dict()
     except IndexError: return []
 
-    # --- FIX: Simplified and more robust distance calculation ---
     if not meals_df.empty and not users_df.empty and not restaurants_df.empty:
-        # Create mapping dictionaries for locations
         user_locs = users_df.set_index('id')[['latitude', 'longitude']].to_dict('index')
         rest_locs = restaurants_df.set_index('id')[['latitude', 'longitude']].to_dict('index')
 
-        # Map locations to the meals dataframe safely
         meals_df['user_lat'] = meals_df['user_id'].map(lambda x: user_locs.get(x, {}).get('latitude'))
         meals_df['user_lon'] = meals_df['user_id'].map(lambda x: user_locs.get(x, {}).get('longitude'))
         meals_df['rest_lat'] = meals_df['restaurant_id'].map(lambda x: rest_locs.get(x, {}).get('latitude'))
         meals_df['rest_lon'] = meals_df['restaurant_id'].map(lambda x: rest_locs.get(x, {}).get('longitude'))
 
-        # Calculate distance only for rows with complete location data
         meals_df['distance_travelled'] = meals_df.apply(
             lambda row: haversine(row['user_lat'], row['user_lon'], row['rest_lat'], row['rest_lon']),
             axis=1
         )
-        # Clean up temporary columns
         meals_df.drop(columns=['user_lat', 'user_lon', 'rest_lat', 'rest_lon'], inplace=True)
 
     meal_count = get_meal_count(user_id, interactions_df)
