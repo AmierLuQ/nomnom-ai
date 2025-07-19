@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
-from math import radians, sin, cos, sqrt, atan2
+from math import radians, sin, cos, sqrt, atan2, log
 import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -28,12 +28,18 @@ def get_meal_count(user_id):
         result = connection.execute(text(query_string)).scalar()
     return result if result else 0
 
-def recommend_for_new_user(target_user_id, all_users_df, reviews_df, exclude_ids=[]):
+# --- MODIFIED FUNCTION ---
+def recommend_for_new_user(target_user_id, all_users_df, reviews_df, restaurants_df, exclude_ids=[]):
+    """
+    Recommend for new users based on demographic similarity.
+    If no similar user recommendations are found, fall back to globally popular restaurants.
+    """
     try:
         target_user = all_users_df[all_users_df['id'] == target_user_id].iloc[0]
     except IndexError:
         return []
 
+    # --- Part 1: Try to find recommendations from similar users ---
     similarities = []
     for index, user in all_users_df.iterrows():
         if user['id'] == target_user_id: continue
@@ -47,15 +53,31 @@ def recommend_for_new_user(target_user_id, all_users_df, reviews_df, exclude_ids
 
     similar_users = sorted(similarities, key=lambda x: x[1], reverse=True)[:10]
     similar_user_ids = [uid for uid, score in similar_users]
-    if not similar_user_ids: return []
-
-    recommendations = reviews_df[reviews_df['user_id'].isin(similar_user_ids)]
-    top_rated_by_similar_users = recommendations[recommendations['rating'] >= 4]
     
-    # FIX: Exclude already seen restaurants before returning
-    all_recs = top_rated_by_similar_users['restaurant_id'].value_counts().index.tolist()
-    filtered_recs = [rec for rec in all_recs if rec not in exclude_ids]
-    return filtered_recs[:10] # Return the next 10
+    recommended_restaurants = []
+    if similar_user_ids:
+        recommendations = reviews_df[reviews_df['user_id'].isin(similar_user_ids)]
+        # FIX: Lowered rating threshold from 4 to 3 to be less strict
+        top_rated_by_similar_users = recommendations[recommendations['rating'] >= 3]
+        all_recs = top_rated_by_similar_users['restaurant_id'].value_counts().index.tolist()
+        recommended_restaurants = [rec for rec in all_recs if rec not in exclude_ids]
+
+    # --- Part 2: Fallback to globally popular if no recommendations were found ---
+    if not recommended_restaurants:
+        print("No similar user recommendations found. Falling back to global popularity.")
+        # Calculate a popularity score: rating * log(reviews). This balances quality and popularity.
+        # We add 1 to num_google_reviews to avoid log(0).
+        restaurants_df['popularity_score'] = restaurants_df['google_rating'] * restaurants_df['num_google_reviews'].apply(lambda x: log(x + 1))
+        
+        # Sort by the new score and get the top restaurant IDs
+        popular_recs = restaurants_df.sort_values('popularity_score', ascending=False)
+        all_popular_ids = popular_recs['id'].tolist()
+        
+        # Filter out any already excluded IDs
+        recommended_restaurants = [rec for rec in all_popular_ids if rec not in exclude_ids]
+
+    return recommended_restaurants[:10] # Return the top 10 from whichever method worked
+
 
 def recommend_for_active_user(user_id, restaurants_df, interactions_df, exclude_ids=[]):
     user_eaten_restaurants = interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'eat')]
@@ -71,7 +93,6 @@ def recommend_for_active_user(user_id, restaurants_df, interactions_df, exclude_
     sim_scores = list(enumerate(cosine_sim[0]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     
-    # FIX: Exclude already eaten AND already seen restaurants
     all_seen_ids = set(eaten_restaurant_ids) | set(exclude_ids)
     
     recommended_ids = []
@@ -79,13 +100,14 @@ def recommend_for_active_user(user_id, restaurants_df, interactions_df, exclude_
         restaurant_id = restaurants_df.iloc[idx]['id']
         if restaurant_id not in all_seen_ids:
             recommended_ids.append(restaurant_id)
-        if len(recommended_ids) >= 10: # Stop once we have enough new ones
+        if len(recommended_ids) >= 10:
             break
             
     return recommended_ids
 
+# --- MODIFIED FUNCTION ---
 def get_recommendations(user_id, exclude_ids=[]):
-    """Main recommendation function, now accepts exclude_ids."""
+    """Main recommendation function, now passes restaurants_df to the new user model."""
     users_df = pd.read_sql_table('user', engine)
     reviews_df = pd.read_sql_table('review', engine)
     restaurants_df = pd.read_sql_table('restaurant', engine)
@@ -95,7 +117,9 @@ def get_recommendations(user_id, exclude_ids=[]):
     
     if meal_count < 15:
         print(f"User {user_id} is a new user. Using cold-start model.")
-        return recommend_for_new_user(user_id, users_df, reviews_df, exclude_ids)
+        # FIX: Pass the restaurants_df for the new fallback logic
+        return recommend_for_new_user(user_id, users_df, reviews_df, restaurants_df, exclude_ids)
     else:
         print(f"User {user_id} is an active user. Using personalized model.")
         return recommend_for_active_user(user_id, restaurants_df, interactions_df, exclude_ids)
+

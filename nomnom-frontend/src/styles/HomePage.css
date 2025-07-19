@@ -11,6 +11,74 @@
   overflow: hidden; /* Prevent horizontal scroll from swipe animations */
 }
 
+/* ==================== NEW: Status Screens Styling ==================== */
+.status-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1; /* Take up all available vertical space */
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.status-logo {
+  width: auto;
+  height: 24vh;
+  object-fit: contain;
+  margin-bottom: 12px;
+  filter: drop-shadow(0px 8px 20px #00000060);
+  animation: turnin 5s ease-in-out infinite;
+}
+
+@keyframes turnin {
+  0%, 75%, 100%{
+    transform: rotate(90deg);
+  }
+  25%, 50% {
+    transform: rotate(0deg)
+  }  
+}
+
+
+.status-message {
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  color: #FDFFFC;
+  opacity: 0.8;
+}
+
+/* Specific styling for the "Finished" screen */
+.finished-container .finished-header {
+  font-family: "Inter", sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.finished-container .status-message {
+  margin-bottom: 32px;
+}
+
+.finished-button {
+  background-color: #41EAD4;
+  color: #011627;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.finished-button:hover {
+  background-color: #FDFFFC;
+  transform: scale(1.05);
+}
+
+
 /* ==================== Header ==================== */
 .home-header {
   width: 100%;
@@ -47,7 +115,6 @@
 .home-image-box.expanded {
   flex-grow: 1; /* Ensure it takes full height available */
   justify-content: flex-start; /* Move content to top */
-  /* We'll handle description overflow internally now, not on image-box */
 }
 
 .home-restaurant-image {
@@ -83,7 +150,6 @@
   padding-bottom: 8px; /* Kept your revised padding */
   display: flex;
   flex-direction: column;
-  /justify-content: flex-end; /* Initial: content at bottom */
   align-items: center; /* Center horizontally for initial state */
   height: 100%; /* Take full height of parent */
   width: 100%; /* Take full width of parent */
@@ -199,53 +265,50 @@
 
 /* ==================== Description View ==================== */
 .home-details-container {
-  /* Position absolute so it doesn't affect layout when hidden */
   position: absolute;
-  top: 0; /* Will be pushed down by .home-top-info-container when expanded */
-  left: 20px; /* Matches left padding of home-image-content */
-  right: 20px; /* Matches right padding of home-image-content */
-  bottom: 8px; /* Space from bottom of image-content, adjusting for button area */
-
+  top: 0;
+  left: 20px;
+  right: 20px;
+  bottom: 8px;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(600px); /* Initial state: slightly off-screen for slide-in */
+  transform: translateY(600px);
   transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out, transform 0.4s ease-in-out;
-
-  display: flex; /* Keep flex for its internal layout */
+  display: flex;
   flex-direction: column;
   gap: 12px;
   text-align: left;
   color: #FDFFFC;
   font-family: "DM Sans", sans-serif;
-  font-size: 12px; /* Kept your revised font size */
-  width: calc(100% - 40px); /* Adjust width for absolute positioning with padding */
+  font-size: 12px;
+  width: calc(100% - 40px);
   max-height: 400px;
-  pointer-events: none; /* Default: no pointer events when hidden */
-  overflow-y: hidden; /* Allow scrolling within the details container itself */
-  box-sizing: border-box; /* Include padding in its dimensions */
+  pointer-events: none;
+  overflow-y: hidden;
+  box-sizing: border-box;
   top: 120px;
 }
 
 .home-details-container.show {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0); /* Move to final position */
-  pointer-events: auto; /* Enable pointer events when shown */
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .home-map-placeholder {
   width: 100%;
   height: 180px;
-  background-color: rgba(1, 22, 39, 0.7); /* Darker background */
+  background-color: rgba(1, 22, 39, 0.7);
   border-radius: 15px;
   display: flex;
-  flex-direction: column; /* Stack icon and text */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: #FDFFFC;
-  font-size: 14px; /* Slightly larger text for placeholder */
+  font-size: 14px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  margin-bottom: 10px; /* Space below map */
+  margin-bottom: 10px;
 }
 .home-map-placeholder p {
   margin-top: 8px;
@@ -254,17 +317,17 @@
 
 .home-info-row {
   display: flex;
-  align-items: flex-start; /* Align icons and text at the top if text wraps */
+  align-items: flex-start;
   gap: 16px;
-  font-size: 14px; /* Specific pixel size */
-  line-height: 1.4; /* Improve readability of text */
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .home-info-row svg {
   align-self: center;
   width: 16px;
   height: auto;
-  flex-shrink: 0; /* Prevent icon from shrinking */
+  flex-shrink: 0;
 }
 
 .home-info-row .home-status-open {
@@ -280,15 +343,15 @@
 /* ==================== Button Group & Swipe Indicator ==================== */
 .home-bottom-fixed {
   width: 90%;
-  pointer-events: auto; /* Re-enable pointer events for buttons */
-  position: absolute; /* Keep buttons at the bottom when scrolling in expanded view */
+  pointer-events: auto;
+  position: absolute;
   bottom: 0;
-  padding: 0px; /* Kept your revised padding */
+  padding: 0px;
 }
 
 .home-button-group {
   display: flex;
-  justify-content: space-between; /* Kept your revised spacing */
+  justify-content: space-between;
   align-items: center;
   width: 100%;
 }
@@ -297,9 +360,9 @@
   background-color: #fdfffc;
   border: 4px solid;
   border-radius: 50%;
-  width: 72px; /* Kept your revised size */
-  height: 72px; /* Kept your revised size */
-  font-size: 32px; /* Base icon size */
+  width: 72px;
+  height: 72px;
+  font-size: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -312,31 +375,30 @@
 .home-action-button.home-skip {
   border-color: #FC3B48;
   color: #FC3B48;
-  width: 80px; /* Kept your revised size */
-  height: 80px; /* Kept your revised size */
-  font-size: 48px; /* Kept your revised size */
+  width: 80px;
+  height: 80px;
+  font-size: 48px;
 }
 .home-action-button.home-undo {
   border-color: #41EAD4;
   color: #41EAD4;
 }
 .home-action-button.home-favorite {
-  border-color: #ff219b; /* Original pink from requirements */
+  border-color: #ff219b;
   color: #ff219b;
 }
 .home-action-button.home-eat {
-  border-color: #4CAF50; /* Light green */
+  border-color: #4CAF50;
   color: #4CAF50;
-  width: 80px; /* Kept your revised size */
-  height: 80px; /* Kept your revised size */
-  font-size: 40px; /* Kept your revised size */
+  width: 80px;
+  height: 80px;
+  font-size: 40px;
 }
 
-/* Hover/Active states */
 .home-action-button:hover,
 .home-action-button:active {
-  transform: scale(1.1); /* Scale up on hover/active */
-  filter: brightness(1.2); /* Tint effect */
+  transform: scale(1.1);
+  filter: brightness(1.2);
 }
 
 /* Swipe Indicators */
@@ -346,7 +408,7 @@
   color: #FDFFFC;
   opacity: 0.5;
   cursor: pointer;
-  animation: bounce 1.5s infinite; /* Bopping animation */
+  animation: bounce 1.5s infinite;
   pointer-events: auto;
 }
 
