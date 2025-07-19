@@ -195,19 +195,45 @@ def get_restaurants():
         print("❌ Error in /api/restaurants:", e)
         return jsonify({'message': 'Server error fetching restaurants'}), 500
 
-@app.route('/api/recommend', methods=['GET'])
+# Recommend Restaurants 
+@app.route('/api/recommend', methods=['POST']) # <-- FIX: Changed to POST
 @jwt_required()
 def recommend():
     try:
         user_id = get_jwt_identity()
-        recommended_ids = get_recommendations(user_id)
+        
+        # FIX: Get the list of IDs to exclude from the request body
+        data = request.get_json()
+        exclude_ids = data.get('exclude_ids', [])
+
+        # Add the "Home Cooked" restaurant to the exclusion list automatically
+        exclude_ids.append('RST_901')
+        
+        # Call our recommendation function with the exclusion list
+        recommended_ids = get_recommendations(user_id, exclude_ids=exclude_ids)
+        
+        # The fallback logic is no longer needed here, as the recommender
+        # will return an empty list if there are no more matches.
+
         if not recommended_ids:
-            recommended_ids = [r.id for r in Restaurant.query.order_by(Restaurant.google_rating.desc()).limit(10).all()]
+            # If the recommender returns nothing, send an empty list.
+            return jsonify({'user_id': user_id, 'recommendations': []}), 200
+
+        # Fetch full restaurant details
         recommendations = Restaurant.query.filter(Restaurant.id.in_(recommended_ids)).all()
         recommendations_dict = {r.id: r for r in recommendations}
         ordered_recs = [recommendations_dict[rid] for rid in recommended_ids if rid in recommendations_dict]
-        result = [{'id': r.id, 'name': r.name, 'tags': [tag for tag in [r.tag_1, r.tag_2, r.tag_3] if tag], 'google_rating': r.google_rating, 'price_range': f"{r.price_min} - {r.price_max}", 'location': f"{r.latitude},{r.longitude}", 'description': r.description, 'address': r.address, 'opening_time': r.opening_time, 'closing_time': r.closing_time, 'phone': r.phone} for r in ordered_recs]
+
+        result = [{
+            'id': r.id, 'name': r.name, 'tags': [t for t in [r.tag_1, r.tag_2, r.tag_3] if t],
+            'google_rating': r.google_rating, 'price_range': f"{r.price_min} - {r.price_max}",
+            'location': f"{r.latitude},{r.longitude}", 'description': r.description,
+            'address': r.address, 'opening_time': r.opening_time, 'closing_time': r.closing_time,
+            'phone': r.phone
+        } for r in ordered_recs]
+        
         return jsonify({'user_id': user_id, 'recommendations': result}), 200
+
     except Exception as e:
         print(f"❌ Error in /api/recommend: {e}")
         return jsonify({'message': 'Error generating recommendations'}), 500
