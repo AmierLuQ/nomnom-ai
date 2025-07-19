@@ -111,22 +111,8 @@
   opacity: 0.9;
 }
 
-.home-logout-button {
-  background-color: #FF7E21;
-  color: #010813;
-  border: none;
-  border-radius: 20px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.home-logout-button:hover {
-  background-color: #FC3B48;
-  transform: scale(1.05);
-}
+/* --- REMOVED: Logout Button Styles --- */
+/* .home-logout-button was here */
 
 .home-profile-button {
   background: none;

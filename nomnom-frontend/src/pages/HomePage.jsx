@@ -25,11 +25,10 @@ export default function HomePage() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [hasFinished, setHasFinished] = useState(false);
     const navigate = useNavigate();
-    const [username, setUsername] = useState(''); // <-- ADDED: State for username
+    const [username, setUsername] = useState('');
 
     const isInitialLoad = useRef(true);
 
-    // --- ADDED: Get username on initial load ---
     useEffect(() => {
         const storedUsername = localStorage.getItem("username");
         if (storedUsername) {
@@ -83,7 +82,6 @@ export default function HomePage() {
         }
     }, [loadRecommendations]);
 
-    // --- Event Handlers ---
     const handleNextCard = () => {
         const nextIndex = currentIndex + 1;
         if (restaurants && nextIndex >= restaurants.length - 2 && !isLoadingMore && !hasFinished) {
@@ -99,20 +97,11 @@ export default function HomePage() {
     const handleUndo = (e) => { e.stopPropagation(); if (currentIndex > 0) setCurrentIndex(c => c - 1); setShowDetails(false); };
     const handleFavorite = (e) => { e.stopPropagation(); console.log("Favorite!", restaurants[currentIndex]?.id); };
 
-    // --- ADDED: Logout Handler ---
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
-        navigate("/login");
-    };
-
-    // Helper function to format the price range
     const formatPriceRange = (priceRangeString) => {
         if (!priceRangeString) return '';
         return priceRangeString.replace(/\.00/g, '');
     };
 
-    // --- RENDER LOGIC ---
     if (restaurants === null) {
         return <StatusScreen message="Finding recommendations for you..." />;
     }
@@ -163,16 +152,13 @@ export default function HomePage() {
 
     return (
         <div className="home-container">
-            {/* --- MODIFIED: Header with user info and logout button --- */}
             <header className="home-header">
                 <img src="/nomnom-ai-long-logo.PNG" alt="NomNom AI Logo" className="home-logo" />
                 <div className="home-user-info">
                     <span className="home-welcome-text">Hi, {username}!</span>
-                    {/* ADDED: Profile Button */}
                     <button className="home-profile-button" onClick={() => navigate('/profile')}>
                         <FaUserCircle />
                     </button>
-                    <button className="home-logout-button" onClick={handleLogout}>Logout</button>
                 </div>
             </header>
             <div className={`home-image-box ${showDetails ? "expanded" : ""}`}>
