@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import "../styles/HomePage.css";
 import {
     FaTimes, FaUndoAlt, FaHeart, FaUtensils, FaChevronUp, FaChevronDown,
@@ -26,7 +26,9 @@ export default function HomePage() {
     const [hasFinished, setHasFinished] = useState(false);
     const navigate = useNavigate();
 
-    // This function now handles fetching and appending data
+    // FIX: A ref to track if it's the initial load, preventing useEffect loops.
+    const isInitialLoad = useRef(true);
+
     const loadRecommendations = useCallback((currentRestaurantIds = []) => {
         if (isLoadingMore || hasFinished) return;
         setIsLoadingMore(true);
@@ -50,37 +52,34 @@ export default function HomePage() {
             if (data.recommendations && data.recommendations.length > 0) {
                 setRestaurants(prev => [...(prev || []), ...data.recommendations]);
             } else {
-                // If it was the first fetch and it's empty, set an empty array.
                 if (currentRestaurantIds.length === 0) {
                     setRestaurants([]);
                 } else {
-                // If it was a subsequent fetch that's empty, we've reached the end.
                     setHasFinished(true);
                 }
             }
         })
         .catch(err => {
             console.error("API fetch error:", err);
-            if (restaurants === null) setRestaurants([]); // Handle error on initial load
+            setRestaurants([]);
         })
         .finally(() => {
             setIsLoadingMore(false);
         });
-    }, [navigate, isLoadingMore, hasFinished, restaurants]);
+    }, [navigate, hasFinished, isLoadingMore]);
 
-    // This useEffect hook runs ONLY ONCE to get the initial data.
+    // This useEffect hook now safely runs ONLY ONCE for the initial load.
     useEffect(() => {
-        // We need to use a non-hook function inside because of ESLint rules
-        const initialLoad = () => {
-             loadRecommendations();
+        if (isInitialLoad.current) {
+            isInitialLoad.current = false; // Set it to false after the first run
+            loadRecommendations();
         }
-        initialLoad();
-    }, []); // Empty dependency array ensures it runs once on mount.
+    }, [loadRecommendations]);
 
     // --- Event Handlers ---
     const handleNextCard = () => {
         const nextIndex = currentIndex + 1;
-        // Check if we need to fetch more data
+        // The logic to fetch more remains the same, but it will now work correctly.
         if (restaurants && nextIndex >= restaurants.length - 2 && !isLoadingMore && !hasFinished) {
             const currentIds = restaurants.map(r => r.id);
             loadRecommendations(currentIds);
@@ -93,6 +92,12 @@ export default function HomePage() {
     const handleEat = (e) => { e.stopPropagation(); console.log("Eat!", restaurants[currentIndex]?.id); handleNextCard(); };
     const handleUndo = (e) => { e.stopPropagation(); if (currentIndex > 0) setCurrentIndex(c => c - 1); setShowDetails(false); };
     const handleFavorite = (e) => { e.stopPropagation(); console.log("Favorite!", restaurants[currentIndex]?.id); };
+
+    // Helper function to format the price range
+    const formatPriceRange = (priceRangeString) => {
+        if (!priceRangeString) return '';
+        return priceRangeString.replace(/\.00/g, '');
+    };
 
     // --- RENDER LOGIC ---
     if (restaurants === null) {
@@ -134,13 +139,13 @@ export default function HomePage() {
                 <img src={`/images/${restaurant.id.toLowerCase()}.png`} alt={restaurant.name} className="home-restaurant-image" />
                 <div className="home-image-gradient"></div>
                 <div className="home-image-content">
-                    <div className="home-top-info-container"><div className="home-name-rating-container"><h2 className="home-restaurant-name">{restaurant.name}</h2><p className="home-restaurant-rating">{Number(restaurant.google_rating || 0).toFixed(1)}{" "}{getStars(Number(restaurant.google_rating || 0))}</p></div><div className="home-pill-container">{restaurant.tags.map((tag, index) => (<span key={index} className="home-pill-box home-tag">{tag}</span>))}{!showDetails && (<span className="home-pill-box home-price">{restaurant.price_range}</span>)}</div></div>
+                    <div className="home-top-info-container"><div className="home-name-rating-container"><h2 className="home-restaurant-name">{restaurant.name}</h2><p className="home-restaurant-rating">{Number(restaurant.google_rating || 0).toFixed(1)}{" "}{getStars(Number(restaurant.google_rating || 0))}</p></div><div className="home-pill-container">{restaurant.tags.map((tag, index) => (<span key={index} className="home-pill-box home-tag">{tag}</span>))}{!showDetails && (<span className="home-pill-box home-price">{formatPriceRange(restaurant.price_range)}</span>)}</div></div>
                     <div className={`home-details-container ${showDetails ? "show" : ""}`}>
                         {mapUrl ? (<div className="home-map-container"><iframe title="Google Map" src={mapUrl} width="100%" height="150" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe></div>) : (<div className="home-map-placeholder"><FaMapMarkerAlt size={24} /> <p>Map Not Available</p></div>)}
                         <div className="home-info-row"><FaMapMarkerAlt size={14} /> <span>{restaurant.address || "No address provided."}</span></div>
                         <div className="home-info-row"><FaRegStickyNote size={14} /> <span>{restaurant.description || "No description provided."}</span></div>
                         <div className="home-info-row"><FaClock size={14} /><span><span className={isRestaurantOpen ? "home-status-open" : "home-status-closed"}>{openStatus}</span>{" • "}{restaurant.opening_time && restaurant.closing_time ? `${restaurant.opening_time.substring(0, 5)} - ${restaurant.closing_time.substring(0, 5)}` : "Hours unknown."}</span></div>
-                        <div className="home-info-row"><FaMoneyBillWave size={14} /> <span>{restaurant.price_range} per person</span></div>
+                        <div className="home-info-row"><FaMoneyBillWave size={14} /> <span>{formatPriceRange(restaurant.price_range)} per person</span></div>
                         <div className="home-info-row"><FaPhone size={14} /> <span>{restaurant.phone || "No phone number provided."}</span></div>
                     </div>
                     <div className="home-bottom-fixed">

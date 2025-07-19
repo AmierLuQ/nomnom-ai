@@ -196,7 +196,7 @@ def get_restaurants():
         return jsonify({'message': 'Server error fetching restaurants'}), 500
 
 # Recommend Restaurants 
-@app.route('/api/recommend', methods=['POST']) # <-- FIX: Changed to POST
+@app.route('/api/recommend', methods=['POST'])
 @jwt_required()
 def recommend():
     try:

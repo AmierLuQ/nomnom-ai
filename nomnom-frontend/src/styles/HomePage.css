@@ -29,18 +29,17 @@
   object-fit: contain;
   margin-bottom: 12px;
   filter: drop-shadow(0px 8px 20px #00000060);
-  animation: turnin 5s ease-in-out infinite;
+  animation: turnin 6s ease-in-out infinite;
 }
 
 @keyframes turnin {
-  0%, 75%, 100%{
-    transform: rotate(90deg);
+  0%, 5%, 75%, 100%{
+    transform: rotate(0deg);
   }
-  25%, 50% {
-    transform: rotate(0deg)
+  20%, 60% {
+    transform: rotate(90deg)
   }  
 }
-
 
 .status-message {
   font-family: "DM Sans", sans-serif;
