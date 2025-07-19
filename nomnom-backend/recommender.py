@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------
-# FILE: recommender.py (Advanced Dynamic & Context-Aware Hybrid Model)
+# FILE: recommender.py (With Extensive Debug Logging)
 # ----------------------------------------------------------------------
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -38,15 +38,21 @@ def get_current_context():
     elif 19.5 <= hour < 22.0: meal_time = "Dinner"
     elif 22.0 <= hour < 23.5: meal_time = "Late Dinner"
     else: meal_time = "Midnight Snack"
+    print(f"[DEBUG] Current context: Day={day}, MealTime={meal_time}")
     return day, meal_time
 
 def get_meal_count(user_id, interactions_df):
-    return len(interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'eat')])
+    count = len(interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'eat')])
+    print(f"[DEBUG] User {user_id} has {count} 'eat' interactions.")
+    return count
 
 # --- Feature Engineering ---
 def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
+    print(f"[DEBUG] Building profile for user {user_id}...")
     user_meals = meals_df[meals_df['user_id'] == user_id]
-    if user_meals.empty: return {}
+    if user_meals.empty: 
+        print("[DEBUG] User has no meal data. Returning empty profile.")
+        return {}
     
     user_meals_details = pd.merge(user_meals, restaurants_df, left_on='restaurant_id', right_on='id', how='left')
     user_meals_details.dropna(subset=['price_min', 'price_max'], inplace=True)
@@ -71,6 +77,7 @@ def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
         'weekday_travel_dist': weekday_meals['distance_travelled'].median() if not weekday_meals.empty and 'distance_travelled' in weekday_meals.columns else 5.0,
         'weekend_travel_dist': weekend_meals['distance_travelled'].median() if not weekend_meals.empty and 'distance_travelled' in weekend_meals.columns else 15.0,
     }
+    print(f"[DEBUG] Profile built: {profile}")
     return profile
 
 def create_implicit_ratings(reviews_df):
@@ -86,6 +93,7 @@ def create_implicit_ratings(reviews_df):
 
 # --- Scoring Functions ---
 def calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag):
+    # This function is called many times, so logging is kept minimal
     day, meal_time = context
     score = 0
     weights = {'distance': 0.3, 'price': 0.2, 'tag': 0.2, 'popularity': 0.1, 'pattern': 0.2}
@@ -124,7 +132,7 @@ def recommend_for_new_user(user, restaurants_df, meals_df, exclude_ids=[]):
     return recommend_for_active_user(user, restaurants_df, pd.DataFrame(), pd.DataFrame(), meals_df, exclude_ids, is_new_user=True)
 
 def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False):
-    print(f"Running model for user {user['id']} (New User: {is_new_user})")
+    print(f"[DEBUG] Running model for user {user['id']} (New User: {is_new_user})")
     context = get_current_context()
     
     user_profile = build_user_profile(user['id'], meals_df, restaurants_df, interactions_df)
@@ -138,9 +146,9 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
                 meal_time_encoded = encoders['meal_time'].transform([context[1]])[0]
                 predicted_tag_encoded = pattern_model.predict([[day_encoded, meal_time_encoded]])[0]
                 predicted_tag = encoders['tag'].inverse_transform([predicted_tag_encoded])[0]
-                print(f"Pattern model predicts user is in the mood for: {predicted_tag}")
+                print(f"[DEBUG] Pattern model predicts user is in the mood for: {predicted_tag}")
             except Exception as e:
-                print(f"Could not predict tag: {e}")
+                print(f"[DEBUG] Could not predict tag: {e}")
 
     if is_new_user:
         day, meal_time = context
@@ -148,30 +156,35 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
         restaurants_df['distance'] = restaurants_df.apply(lambda row: haversine(user['latitude'], user['longitude'], row['latitude'], row['longitude']), axis=1)
         nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
         candidate_ids = list(dict.fromkeys(popular_now_ids + nearby_ids))
-        print(f"Cold-start generated {len(candidate_ids)} candidates.")
+        print(f"[DEBUG] Cold-start generated {len(candidate_ids)} candidates.")
     else:
         all_seen_ids = set(interactions_df[(interactions_df['user_id'] == user['id'])]['restaurant_id'].unique()) | set(exclude_ids)
         candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
-        print(f"Warm-start (SVD) generated {len(candidate_ids)} candidates.")
+        print(f"[DEBUG] Warm-start (SVD) generated {len(candidate_ids)} candidates.")
 
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: 
-        print("No candidate details found. Returning empty list.")
+        print("[DEBUG] No candidate details found after generation. Returning empty list.")
         return []
     
     scored_recs = []
     for _, restaurant in candidate_details.iterrows():
         score = calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag)
-        # FIX: Corrected the variable name from scored_cs to scored_recs
         scored_recs.append((restaurant['id'], score))
         
     scored_recs.sort(key=lambda x: x[1], reverse=True)
+    
+    # Log the top 5 scored recommendations to see what the scores look like
+    print(f"[DEBUG] Top 5 scored recommendations: {scored_recs[:5]}")
+    
     final_rec_ids = [rec_id for rec_id, score in scored_recs if rec_id not in exclude_ids]
-    print(f"Returning {len(final_rec_ids)} final recommendations.")
+    print(f"[DEBUG] Returning {len(final_rec_ids[:15])} final recommendations.")
     return final_rec_ids[:15]
 
 def get_svd_recs(user_id, reviews_df, restaurants_df, all_seen_ids):
-    if reviews_df.empty: return []
+    if reviews_df.empty: 
+        print("[DEBUG] SVD model: reviews_df is empty. Cannot generate candidates.")
+        return []
     implicit_reviews_df = create_implicit_ratings(reviews_df)
     reader = Reader(rating_scale=(1, 7))
     data = Dataset.load_from_df(implicit_reviews_df[['user_id', 'restaurant_id', 'implicit_rating']], reader)
@@ -185,11 +198,15 @@ def get_svd_recs(user_id, reviews_df, restaurants_df, all_seen_ids):
 
 def train_pattern_recognition_model(user_id, meals_df, restaurants_df):
     user_meals = meals_df[meals_df['user_id'] == user_id]
-    if len(user_meals) < 10: return None, None
+    if len(user_meals) < 10: 
+        print("[DEBUG] Not enough data to train pattern model.")
+        return None, None
     
     training_data = pd.merge(user_meals, restaurants_df, left_on='restaurant_id', right_on='id')
     training_data = training_data[['day', 'meal_time', 'tag_1']].dropna()
-    if len(training_data) < 10: return None, None
+    if len(training_data) < 10: 
+        print("[DEBUG] Not enough clean data to train pattern model after merge.")
+        return None, None
 
     encoders = {
         'day': LabelEncoder().fit(training_data['day']),
@@ -200,21 +217,27 @@ def train_pattern_recognition_model(user_id, meals_df, restaurants_df):
     y = encoders['tag'].transform(training_data['tag_1'])
     model = DecisionTreeClassifier(random_state=42)
     model.fit(X, y)
+    print("[DEBUG] Pattern recognition model trained successfully.")
     return model, encoders
 
 # --- Main Orchestrator ---
 def get_recommendations(user_id, exclude_ids=[]):
-    print("\n--- Starting new recommendation request ---")
-    users_df = pd.read_sql_table('user', engine)
-    reviews_df = pd.read_sql_table('review', engine)
-    restaurants_df = pd.read_sql_table('restaurant', engine)
-    interactions_df = pd.read_sql_table('interaction_log', engine)
-    meals_df = pd.read_sql_table('meal', engine)
+    print(f"\n--- Starting new recommendation request for user {user_id} ---")
+    try:
+        users_df = pd.read_sql_table('user', engine)
+        reviews_df = pd.read_sql_table('review', engine)
+        restaurants_df = pd.read_sql_table('restaurant', engine)
+        interactions_df = pd.read_sql_table('interaction_log', engine)
+        meals_df = pd.read_sql_table('meal', engine)
+        print(f"[DEBUG] Data loaded: {len(users_df)} users, {len(restaurants_df)} restaurants, {len(meals_df)} meals, {len(reviews_df)} reviews.")
+    except Exception as e:
+        print(f"[ERROR] Failed to load data from database: {e}")
+        return []
     
     try:
         current_user = users_df[users_df['id'] == user_id].iloc[0].to_dict()
     except IndexError: 
-        print(f"User {user_id} not found.")
+        print(f"[ERROR] User {user_id} not found in database.")
         return []
 
     if not meals_df.empty:
@@ -223,15 +246,13 @@ def get_recommendations(user_id, exclude_ids=[]):
         meals_with_loc.dropna(subset=['latitude_user', 'longitude_user', 'latitude_rest', 'longitude_rest'], inplace=True)
         
         if not meals_with_loc.empty:
-            # Using a more robust merge key
-            meals_with_loc['merge_key'] = meals_with_loc['id_user'].astype(str) + "_" + meals_with_loc['id_rest'].astype(str)
-            distance_map = meals_with_loc.set_index('merge_key')['distance'] = meals_with_loc.apply(
-                lambda row: haversine(row['latitude_user'], row['longitude_user'], row['latitude_rest'], row['longitude_rest']), axis=1
-            )
-            
-            meals_df['merge_key'] = meals_df['user_id'].astype(str) + "_" + meals_df['restaurant_id'].astype(str)
-            meals_df['distance_travelled'] = meals_df['merge_key'].map(distance_map)
-            meals_df.drop(columns=['merge_key'], inplace=True)
+            distances = meals_with_loc.apply(lambda row: haversine(row['latitude_user'], row['longitude_user'], row['latitude_rest'], row['longitude_rest']), axis=1)
+            # Use original meal_df index to map distances
+            meals_df['distance_travelled'] = distances
+        else:
+            print("[DEBUG] No meals with complete location data found to calculate distances.")
+    else:
+        print("[DEBUG] meals_df is empty. Skipping distance calculation.")
 
     meal_count = get_meal_count(user_id, interactions_df)
     
