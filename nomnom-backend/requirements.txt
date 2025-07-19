@@ -4,6 +4,7 @@ Flask-SQLAlchemy
 Flask-Bcrypt
 Flask-JWT-Extended
 gunicorn
+numpy<2.0
 pandas
 openpyxl
 python-dotenv
