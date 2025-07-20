@@ -1,0 +1,69 @@
+user_id,simulated_day,simulated_meal_time,ground_truth_id,ground_truth_name,recommendation_1,recommendation_2,recommendation_3,full_recommendation_ids,hit
+USR_001,Tuesday,Late Dinner,RST_001,Tomyam Utama,,,,[],0
+USR_001,Wednesday,Breakfast,RST_068,Kin Loong Valley Chang Jiang White Coffee,,,,[],0
+USR_001,Wednesday,Dinner,RST_045,Syrianno Restaurant (Makanan Arab),,,,[],0
+USR_001,Wednesday,Late Dinner,RST_038,Kentang&Co,,,,[],0
+USR_001,Thursday,Midnight Snack,RST_031,Restoran Al Bayan,,,,[],0
+USR_001,Thursday,Lunch,RST_069,Ayam Gepuk Tok Pa,,,,[],0
+USR_001,Thursday,Late Dinner,RST_012,Mcdonald's Seri Iskandar DT,,,,[],0
+USR_001,Friday,Lunch,RST_008,Rizqullah,,,,[],0
+USR_001,Friday,Linner,RST_066,Pasta Medina Seri Iskandar,,,,[],0
+USR_001,Friday,Midnight Snack,RST_024,Shawarma Zinger UTP,,,,[],0
+USR_001,Saturday,Lunch,RST_006,Subway Seri Iskandar,,,,[],0
+USR_001,Saturday,Midnight Snack,RST_013,Suito Coffee & Dessert,,,,[],0
+USR_001,Sunday,Lunch,RST_009,Leman Cendol SI,,,,[],0
+USR_001,Sunday,Dinner,RST_044,Krua Madam Tomyam,,,,[],0
+USR_001,Sunday,Lunch,RST_070,Wan Corner Chicken Chop,,,,[],0
+USR_001,Sunday,Late Dinner,RST_031,Restoran Al Bayan,,,,[],0
+USR_002,Tuesday,Dinner,RST_004,Rahman's Corner,,,,[],0
+USR_002,Wednesday,Lunch,RST_025,Rayyan Nasi Kukus,,,,[],0
+USR_002,Wednesday,Dinner,RST_004,Rahman's Corner,,,,[],0
+USR_002,Thursday,Lunch,RST_003,Nasi Ayam Berempah,,,,[],0
+USR_002,Thursday,Dinner,RST_029,Bischroon B Tomyam,,,,[],0
+USR_002,Friday,Lunch,RST_007,Restoran Bunda Seri Iskandar,,,,[],0
+USR_002,Friday,Dinner,RST_001,Tomyam Utama,,,,[],0
+USR_002,Saturday,Lunch,RST_003,Nasi Ayam Berempah,,,,[],0
+USR_002,Saturday,Dinner,RST_034,Domino's Seri Iskandar,,,,[],0
+USR_003,Thursday,Lunch,RST_017,Village 3 (V3) Café UTP,,,,[],0
+USR_003,Thursday,Dinner,RST_024,Shawarma Zinger UTP,,,,[],0
+USR_003,Friday,Lunch,RST_063,Village 2 Café UTP,,,,[],0
+USR_003,Friday,Dinner,RST_028,Krua Thai Tomyam,,,,[],0
+USR_003,Saturday,Lunch,RST_014,Ayam Gepuk Pak Gembus Seri Iskandar,,,,[],0
+USR_003,Saturday,Dinner,RST_020,Harraz Café Village 6 (V6),,,,[],0
+USR_003,Sunday,Lunch,RST_901,Home Cooked,,,,[],0
+USR_003,Sunday,Dinner,RST_901,Home Cooked,,,,[],0
+USR_004,Tuesday,Breakfast,RST_062,Village 5 Café UTP,,,,[],0
+USR_004,Tuesday,Lunch,RST_061,Ayam Gepuk Pak Gendut Seri Iskandar,,,,[],0
+USR_004,Tuesday,Dinner,RST_020,Harraz Café Village 6 (V6),,,,[],0
+USR_004,Wednesday,Lunch,RST_062,Village 5 Café UTP,,,,[],0
+USR_004,Wednesday,Dinner,RST_020,Harraz Café Village 6 (V6),,,,[],0
+USR_004,Thursday,Brunch,RST_062,Village 5 Café UTP,,,,[],0
+USR_004,Thursday,Linner,RST_064,Manje's Burger Café,,,,[],0
+USR_004,Thursday,Late Dinner,RST_062,Village 5 Café UTP,,,,[],0
+USR_004,Friday,Lunch,RST_042,Nasi Ayam Plang Tu,,,,[],0
+USR_004,Friday,Dinner,RST_062,Village 5 Café UTP,,,,[],0
+USR_004,Saturday,Lunch,RST_017,Village 3 (V3) Café UTP,,,,[],0
+USR_004,Saturday,Dinner,RST_017,Village 3 (V3) Café UTP,,,,[],0
+USR_004,Sunday,Lunch,RST_062,Village 5 Café UTP,,,,[],0
+USR_004,Sunday,Dinner,RST_020,Harraz Café Village 6 (V6),,,,[],0
+USR_005,Tuesday,Lunch,RST_061,Ayam Gepuk Pak Gendut Seri Iskandar,,,,[],0
+USR_005,Tuesday,Tea Time,RST_066,Pasta Medina Seri Iskandar,,,,[],0
+USR_005,Tuesday,Late Dinner,RST_001,Tomyam Utama,,,,[],0
+USR_005,Wednesday,Breakfast,RST_068,Kin Loong Valley Chang Jiang White Coffee,,,,[],0
+USR_005,Wednesday,Dinner,RST_045,Syrianno Restaurant (Makanan Arab),,,,[],0
+USR_005,Wednesday,Late Dinner,RST_038,Kentang&Co,,,,[],0
+USR_005,Thursday,Lunch,RST_069,Ayam Gepuk Tok Pa,,,,[],0
+USR_005,Thursday,Late Dinner,RST_012,Mcdonald's Seri Iskandar DT,,,,[],0
+USR_005,Friday,Lunch,RST_008,Rizqullah,,,,[],0
+USR_005,Friday,Linner,RST_066,Pasta Medina Seri Iskandar,,,,[],0
+USR_005,Sunday,Dinner,RST_044,Krua Madam Tomyam,,,,[],0
+USR_005,Sunday,Late Dinner,RST_031,Restoran Al Bayan,,,,[],0
+USR_006,Tuesday,Dinner,RST_080,Restoran Mamak Bistro,,,,[],0
+USR_006,Wednesday,Lunch,RST_008,Rizqullah,,,,[],0
+USR_006,Wednesday,Dinner,RST_021,Mastergrill SIBC Restaurant & Catering,,,,[],0
+USR_006,Thursday,Lunch,RST_073,Little Ipoh Café,,,,[],0
+USR_006,Thursday,Late Dinner,RST_012,Mcdonald's Seri Iskandar DT,,,,[],0
+USR_006,Friday,Brunch,RST_017,Village 3 (V3) Café UTP,,,,[],0
+USR_006,Friday,Dinner,RST_028,Krua Thai Tomyam,,,,[],0
+USR_006,Saturday,Lunch,RST_081,Restoran D'putra,,,,[],0
+USR_006,Saturday,Dinner,RST_076,Khunthai Village Restaurant@Ipoh,,,,[],0
