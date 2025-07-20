@@ -22,7 +22,8 @@ engine = create_engine(db_url or 'sqlite:///nomnom.db')
 
 # --- Helper & Context Functions ---
 def haversine(lat1, lon1, lat2, lon2):
-    if any(v is None or not isinstance(v, (int, float)) for v in [lat1, lon1, lat2, lon2]): return float('inf')
+    if any(v is None or not isinstance(v, (int, float)) for v in [lat1, lon1, lat2, lon2]):
+        return float('inf')
     R = 6371; lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2]); dlon = lon2 - lon1; dlat = lat2 - lat1; a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2; c = 2 * atan2(sqrt(a), sqrt(1 - a)); return R * c
 
 def is_restaurant_open(restaurant_row, current_time_float):
@@ -33,16 +34,20 @@ def is_restaurant_open(restaurant_row, current_time_float):
     try:
         open_hour, open_min, _ = map(int, opening_time_str.split(':'))
         close_hour, close_min, _ = map(int, closing_time_str.split(':'))
-        open_time_float = open_hour + open_min / 60.0; close_time_float = close_hour + close_min / 60.0
+        open_time_float = open_hour + open_min / 60.0
+        close_time_float = close_hour + close_min / 60.0
         if close_time_float < open_time_float:
             return current_time_float >= open_time_float or current_time_float < close_time_float
         else:
             return open_time_float <= current_time_float < close_time_float
-    except (ValueError, TypeError): return True
+    except (ValueError, TypeError):
+        return True
 
 def get_current_context():
-    malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur"); now = datetime.now(malaysia_tz)
-    day = now.strftime('%A'); hour = now.hour; minute = now.minute; current_time_float = hour + minute / 60.0
+    malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
+    now = datetime.now(malaysia_tz)
+    day = now.strftime('%A')
+    hour = now.hour; minute = now.minute; current_time_float = hour + minute / 60.0
     if 4.0 <= current_time_float < 7.0: meal_time = "Suhoor"
     elif 7.0 <= current_time_float < 10.0: meal_time = "Breakfast"
     elif 10.0 <= current_time_float < 12.0: meal_time = "Brunch"
@@ -136,14 +141,8 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
         nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
         candidate_ids = list(dict.fromkeys(popular_now_ids + nearby_ids))
     else:
-        # --- FIX: Check if interactions_df is empty before accessing it ---
-        all_seen_ids = set(exclude_ids)
-        if not interactions_df.empty:
-            user_interactions = interactions_df[interactions_df['user_id'] == user['id']]
-            all_seen_ids.update(user_interactions['restaurant_id'].unique())
-            
+        all_seen_ids = set(interactions_df[interactions_df['user_id'] == user['id']]['restaurant_id'].unique()) | set(exclude_ids)
         candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
-        
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: return []
     open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(current_time_float,), axis=1)]
@@ -190,8 +189,8 @@ def get_recommendations(user_id, exclude_ids=[]):
         meals_df['distance_travelled'] = meals_df.apply(lambda r: haversine(r['user_lat'], r['user_lon'], r['rest_lat'], r['rest_lon']), axis=1)
         meals_df.drop(columns=['user_lat', 'user_lon', 'rest_lat', 'rest_lon'], inplace=True)
     
-    # Use meals_df for historical meal count
-    meal_count = get_meal_count(user_id, meals_df)
+    df_for_counting = interactions_df if not interactions_df.empty else meals_df
+    meal_count = get_meal_count(user_id, df_for_counting)
     
     if meal_count < 15:
         return recommend_for_new_user(current_user, restaurants_df, meals_df, exclude_ids)
