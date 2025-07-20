@@ -115,9 +115,8 @@ def calculate_relevance_score(restaurant, user, user_profile, context, predicted
 def recommend_for_new_user(user, restaurants_df, meals_df, exclude_ids=[]):
     return recommend_for_active_user(user, restaurants_df, pd.DataFrame(), pd.DataFrame(), meals_df, exclude_ids, is_new_user=True)
 
-# --- MODIFIED: This function now accepts an optional context for testing ---
 def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False, context=None):
-    if context is None: # If no context is provided (live app), get the current time
+    if context is None:
         context = get_current_context()
     
     day, meal_time, current_time_float = context
@@ -137,8 +136,14 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
         nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
         candidate_ids = list(dict.fromkeys(popular_now_ids + nearby_ids))
     else:
-        all_seen_ids = set(interactions_df[interactions_df['user_id'] == user['id']]['restaurant_id'].unique()) | set(exclude_ids)
+        # --- FIX: Check if interactions_df is empty before accessing it ---
+        all_seen_ids = set(exclude_ids)
+        if not interactions_df.empty:
+            user_interactions = interactions_df[interactions_df['user_id'] == user['id']]
+            all_seen_ids.update(user_interactions['restaurant_id'].unique())
+            
         candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
+        
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: return []
     open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(current_time_float,), axis=1)]
@@ -185,11 +190,8 @@ def get_recommendations(user_id, exclude_ids=[]):
         meals_df['distance_travelled'] = meals_df.apply(lambda r: haversine(r['user_lat'], r['user_lon'], r['rest_lat'], r['rest_lon']), axis=1)
         meals_df.drop(columns=['user_lat', 'user_lon', 'rest_lat', 'rest_lon'], inplace=True)
     
-    # Use the correct dataframe to count meals based on context
-    # In the live app, interactions_df is the source of truth for "active" status
-    # In evaluation, meals_df is the source of truth
-    df_for_counting = interactions_df if not interactions_df.empty else meals_df
-    meal_count = get_meal_count(user_id, df_for_counting)
+    # Use meals_df for historical meal count
+    meal_count = get_meal_count(user_id, meals_df)
     
     if meal_count < 15:
         return recommend_for_new_user(current_user, restaurants_df, meals_df, exclude_ids)
