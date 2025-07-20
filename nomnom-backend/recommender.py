@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------
-# FILE: recommender.py (With Extensive Debug Logging)
+# FILE: recommender.py (With SVD Fallback Logic)
 # ----------------------------------------------------------------------
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -160,8 +160,16 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
         if not interactions_df.empty:
             user_interactions = interactions_df[interactions_df['user_id'] == user['id']]
             all_seen_ids.update(user_interactions['restaurant_id'].unique())
+        
+        # --- FIX: SVD Fallback Logic ---
         candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
         print(f"[DEBUG] Warm-start (SVD) generated {len(candidate_ids)} candidates.")
+        
+        if not candidate_ids:
+            print("[DEBUG] SVD returned no candidates. Falling back to Content-Based model.")
+            candidate_ids = get_content_based_recs(user['id'], restaurants_df, meals_df, all_seen_ids)
+            print(f"[DEBUG] Content-Based fallback generated {len(candidate_ids)} candidates.")
+
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: 
         print("[DEBUG] No candidate details found after generation. Returning empty list.")
@@ -189,6 +197,33 @@ def get_svd_recs(user_id, reviews_df, restaurants_df, all_seen_ids):
     predictions = [model.predict(user_id, rest_id) for rest_id in unseen_ids]
     predictions.sort(key=lambda x: x.est, reverse=True)
     return [pred.iid for pred in predictions[:100]]
+
+# --- NEW: Content-Based Model for Fallback ---
+def get_content_based_recs(user_id, restaurants_df, meals_df, all_seen_ids):
+    """Generates recommendations based on content (tags) using meal history."""
+    user_eaten_restaurants = meals_df[meals_df['user_id'] == user_id]
+    eaten_restaurant_ids = user_eaten_restaurants['restaurant_id'].unique()
+    if len(eaten_restaurant_ids) == 0: return []
+
+    restaurants_df['tags_combined'] = restaurants_df[['tag_1', 'tag_2', 'tag_3']].fillna('').agg(' '.join, axis=1)
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf.fit_transform(restaurants_df['tags_combined'])
+    
+    user_profile_indices = restaurants_df[restaurants_df['id'].isin(eaten_restaurant_ids)].index
+    if len(user_profile_indices) == 0: return []
+    
+    user_profile_vector = tfidf_matrix[user_profile_indices].mean(axis=0)
+    cosine_sim = cosine_similarity(user_profile_vector, tfidf_matrix)
+    sim_scores = sorted(list(enumerate(cosine_sim[0])), key=lambda x: x[1], reverse=True)
+    
+    recommended_ids = []
+    for idx, score in sim_scores:
+        restaurant_id = restaurants_df.iloc[idx]['id']
+        if restaurant_id not in all_seen_ids:
+            recommended_ids.append(restaurant_id)
+        if len(recommended_ids) >= 50: # Generate a good number of candidates
+            break
+    return recommended_ids
 
 def train_pattern_recognition_model(user_id, meals_df, restaurants_df):
     user_meals = meals_df[meals_df['user_id'] == user_id]
@@ -232,8 +267,6 @@ def get_recommendations(user_id, exclude_ids=[]):
     else:
         print("[DEBUG] One or more dataframes are empty. Skipping distance calculation.")
     
-    # In the live app, we use interactions_df to determine if a user is active.
-    # If it's empty, we fall back to meals_df.
     df_for_counting = interactions_df if not interactions_df.empty else meals_df
     meal_count = get_meal_count(user_id, df_for_counting)
     
