@@ -88,7 +88,7 @@
 
 .profile-username {
     font-size: 22px;
-    font-family: "Inter";
+    font-family: "Inter", sans-serif;
     font-weight: bolder;
     margin: 0;
 }
