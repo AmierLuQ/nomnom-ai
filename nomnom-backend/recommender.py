@@ -12,7 +12,6 @@ from datetime import datetime
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import LabelEncoder
-# --- NEW: Import for timezone handling ---
 from zoneinfo import ZoneInfo
 
 # --- Database Connection ---
@@ -44,18 +43,11 @@ def is_restaurant_open(restaurant_row, current_time_float):
     except (ValueError, TypeError):
         return True
 
-# --- MODIFIED: This function now uses the Malaysian timezone ---
 def get_current_context():
-    """Determines the current day and mealtime using the Asia/Kuala_Lumpur timezone."""
-    # Set the timezone to Malaysian time
     malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
     now = datetime.now(malaysia_tz)
-    
     day = now.strftime('%A')
-    hour = now.hour
-    minute = now.minute
-    current_time_float = hour + minute / 60.0
-
+    hour = now.hour; minute = now.minute; current_time_float = hour + minute / 60.0
     if 4.0 <= current_time_float < 7.0: meal_time = "Suhoor"
     elif 7.0 <= current_time_float < 10.0: meal_time = "Breakfast"
     elif 10.0 <= current_time_float < 12.0: meal_time = "Brunch"
@@ -65,36 +57,27 @@ def get_current_context():
     elif 19.5 <= current_time_float < 22.0: meal_time = "Dinner"
     elif 22.0 <= current_time_float < 23.5: meal_time = "Late Dinner"
     else: meal_time = "Midnight Snack"
-
-
-    # DEBUG: Print the server's understanding of the current time
-    print(f"[DEBUG] Current context (Asia/Kuala_Lumpur): Day={day}, MealTime={meal_time}, Time={now.strftime('%H:%M')}")
-    
     return day, meal_time, current_time_float
 
-def get_meal_count(user_id, interactions_df):
-    return len(interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'eat')])
+def get_meal_count(user_id, meals_df):
+    return len(meals_df[meals_df['user_id'] == user_id])
 
-# --- Feature Engineering ---
+# --- Feature Engineering & Scoring ---
 def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
+    user_meals = meals_df[meals_df['user_id'] == user_id]
     if user_meals.empty: return {}
-
     user_meals_details = pd.merge(user_meals, restaurants_df, left_on='restaurant_id', right_on='id', how='left').dropna(subset=['price_min', 'price_max'])
-
     price_min_numeric = pd.to_numeric(user_meals_details['price_min'], errors='coerce')
     price_max_numeric = pd.to_numeric(user_meals_details['price_max'], errors='coerce')
     avg_price = (price_min_numeric.mean() + price_max_numeric.mean()) / 2 if not user_meals_details.empty else 30.0
-
     weekday_meals = user_meals_details[~user_meals_details['day'].isin(['Saturday', 'Sunday'])]
     weekend_meals = user_meals_details[user_meals_details['day'].isin(['Saturday', 'Sunday'])]
-
     disliked_tags = []
     if not interactions_df.empty:
         declined_interactions = interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'decline')]
         if not declined_interactions.empty:
             declined_details = pd.merge(declined_interactions, restaurants_df, left_on='restaurant_id', right_on='id', how='left')
             disliked_tags = declined_details[['tag_1', 'tag_2', 'tag_3']].stack().value_counts().nlargest(3).index.tolist()
-
     profile = {
         'top_tags': user_meals_details[['tag_1', 'tag_2', 'tag_3']].stack().mode().tolist(),
         'disliked_tags': disliked_tags, 'avg_price': avg_price,
@@ -114,7 +97,6 @@ def create_implicit_ratings(reviews_df):
     df['implicit_rating'] = df.apply(calculate_score, axis=1)
     return df
 
-# --- Scoring & Models ---
 def calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag):
     day, meal_time, _ = context
     score = 0; weights = {'distance': 0.3, 'price': 0.2, 'tag': 0.2, 'popularity': 0.1, 'pattern': 0.2}
@@ -134,11 +116,14 @@ def calculate_relevance_score(restaurant, user, user_profile, context, predicted
     if predicted_tag and predicted_tag in restaurant_tags: score += weights['pattern']
     return score
 
+# --- Recommendation Models ---
 def recommend_for_new_user(user, restaurants_df, meals_df, exclude_ids=[]):
     return recommend_for_active_user(user, restaurants_df, pd.DataFrame(), pd.DataFrame(), meals_df, exclude_ids, is_new_user=True)
 
-def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False):
-    context = get_current_context()
+def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False, context=None):
+    if context is None:
+        context = get_current_context()
+    
     day, meal_time, current_time_float = context
     user_profile = build_user_profile(user['id'], meals_df, restaurants_df, interactions_df)
     predicted_tag = None
@@ -151,14 +136,19 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
                 predicted_tag = encoders['tag'].inverse_transform([predicted_tag_encoded])[0]
             except Exception: pass
     if is_new_user:
-        day, meal_time, _ = context
         popular_now_ids = meals_df[meals_df['meal_time'] == meal_time]['restaurant_id'].value_counts().nlargest(30).index.tolist()
         restaurants_df['distance'] = restaurants_df.apply(lambda r: haversine(user['latitude'], user['longitude'], r['latitude'], r['longitude']), axis=1)
         nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
         candidate_ids = list(dict.fromkeys(popular_now_ids + nearby_ids))
     else:
-        all_seen_ids = set(interactions_df[interactions_df['user_id'] == user['id']]['restaurant_id'].unique()) | set(exclude_ids)
+        # --- FIX: Check if interactions_df is empty before trying to access its columns ---
+        all_seen_ids = set(exclude_ids)
+        if not interactions_df.empty:
+            user_interactions = interactions_df[interactions_df['user_id'] == user['id']]
+            all_seen_ids.update(user_interactions['restaurant_id'].unique())
+        
         candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
+        
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: return []
     open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(current_time_float,), axis=1)]
@@ -204,7 +194,12 @@ def get_recommendations(user_id, exclude_ids=[]):
         meals_df['rest_lon'] = meals_df['restaurant_id'].map(lambda x: rest_locs.get(x, {}).get('longitude'))
         meals_df['distance_travelled'] = meals_df.apply(lambda r: haversine(r['user_lat'], r['user_lon'], r['rest_lat'], r['rest_lon']), axis=1)
         meals_df.drop(columns=['user_lat', 'user_lon', 'rest_lat', 'rest_lon'], inplace=True)
-        meal_count = get_meal_count(user_id, interactions_df)
+    
+    # In the live app, we use interactions_df to determine if a user is active.
+    # If it's empty (e.g., first-time users), we fall back to meals_df.
+    df_for_counting = interactions_df if not interactions_df.empty else meals_df
+    meal_count = get_meal_count(user_id, df_for_counting)
+    
     if meal_count < 15:
         return recommend_for_new_user(current_user, restaurants_df, meals_df, exclude_ids)
     else:
