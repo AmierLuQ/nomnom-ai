@@ -57,11 +57,20 @@ def get_current_context():
     elif 19.5 <= current_time_float < 22.0: meal_time = "Dinner"
     elif 22.0 <= current_time_float < 23.5: meal_time = "Late Dinner"
     else: meal_time = "Midnight Snack"
-    print(f"[DEBUG] Current context (Asia/Kuala_Lumpur): Day={day}, MealTime={meal_time}, Time={now.strftime('%H:%M')}")
     return day, meal_time, current_time_float
 
-def get_meal_count(user_id, interactions_df):
-    return len(interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'eat')])
+# --- MODIFIED: This function now correctly uses the dataframe passed to it ---
+def get_meal_count(user_id, meals_or_interactions_df):
+    """
+    Counts the number of meals for a user. It can accept either the meals_df
+    or the interactions_df by checking which columns are present.
+    """
+    if 'user_action' in meals_or_interactions_df.columns:
+        # This is the interactions_df from the live app
+        return len(meals_or_interactions_df[(meals_or_interactions_df['user_id'] == user_id) & (meals_or_interactions_df['user_action'] == 'eat')])
+    else:
+        # This is the meals_df from the evaluation script
+        return len(meals_or_interactions_df[meals_or_interactions_df['user_id'] == user_id])
 
 # --- Feature Engineering ---
 def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
@@ -188,7 +197,13 @@ def get_recommendations(user_id, exclude_ids=[]):
         meals_df['rest_lon'] = meals_df['restaurant_id'].map(lambda x: rest_locs.get(x, {}).get('longitude'))
         meals_df['distance_travelled'] = meals_df.apply(lambda r: haversine(r['user_lat'], r['user_lon'], r['rest_lat'], r['rest_lon']), axis=1)
         meals_df.drop(columns=['user_lat', 'user_lon', 'rest_lat', 'rest_lon'], inplace=True)
-    meal_count = get_meal_count(user_id, interactions_df)
+    
+    # MODIFIED: Pass the correct dataframe based on the context
+    if __name__ == '__main__': # This will be false when run from app.py
+        meal_count = get_meal_count(user_id, meals_df)
+    else:
+        meal_count = get_meal_count(user_id, interactions_df)
+    
     if meal_count < 15:
         return recommend_for_new_user(current_user, restaurants_df, meals_df, exclude_ids)
     else:
