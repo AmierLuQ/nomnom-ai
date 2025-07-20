@@ -1,211 +1,183 @@
-# ----------------------------------------------------------------------
-# FILE: recommender.py (Advanced Dynamic & Context-Aware Hybrid Model)
-# ----------------------------------------------------------------------
+# =======================================================================
+# NomNom AI: Offline Evaluation Script (with Time Simulation)
+# =======================================================================
 import pandas as pd
-from sqlalchemy import create_engine, text
-from math import radians, sin, cos, sqrt, atan2, log
+from sqlalchemy import create_engine
 import os
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from surprise import Dataset, Reader, SVD
-from datetime import datetime
-import numpy as np
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.preprocessing import LabelEncoder
-# --- NEW: Import for timezone handling ---
-from zoneinfo import ZoneInfo
+from dotenv import load_dotenv
 
-# --- Database Connection ---
-db_url = os.environ.get('DATABASE_URL')
-if db_url and db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
-engine = create_engine(db_url or 'sqlite:///nomnom.db')
+# Import the core recommendation logic from your existing file
+from recommender import recommend_for_active_user, get_meal_count, is_restaurant_open
 
-# --- Helper & Context Functions ---
-def haversine(lat1, lon1, lat2, lon2):
-    if any(v is None or not isinstance(v, (int, float)) for v in [lat1, lon1, lat2, lon2]):
-        return float('inf')
-    R = 6371; lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2]); dlon = lon2 - lon1; dlat = lat2 - lat1; a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2; c = 2 * atan2(sqrt(a), sqrt(1 - a)); return R * c
+# --- Configuration ---
+MINIMUM_MEALS_FOR_TESTING = 20 
+K = 15 
 
-def is_restaurant_open(restaurant_row, current_time_float):
-    opening_time_str = restaurant_row['opening_time']
-    closing_time_str = restaurant_row['closing_time']
-    if pd.isna(opening_time_str) or pd.isna(closing_time_str): return True
-    if opening_time_str == closing_time_str: return True
-    try:
-        open_hour, open_min, _ = map(int, opening_time_str.split(':'))
-        close_hour, close_min, _ = map(int, closing_time_str.split(':'))
-        open_time_float = open_hour + open_min / 60.0
-        close_time_float = close_hour + close_min / 60.0
-        if close_time_float < open_time_float:
-            return current_time_float >= open_time_float or current_time_float < close_time_float
-        else:
-            return open_time_float <= current_time_float < close_time_float
-    except (ValueError, TypeError):
-        return True
+# --- NEW: Time Simulation Mapping ---
+# Maps a mealtime name to a representative float hour (mid-point of the range)
+MEAL_TIME_TO_HOUR_MAP = {
+    "Suhoor": 5.5,          # 4:00 AM - 7:00 AM
+    "Breakfast": 8.5,       # 7:00 AM - 10:00 AM
+    "Brunch": 11.0,         # 10:00 AM - 12:00 PM
+    "Lunch": 14.0,          # 12:00 PM - 4:00 PM
+    "Tea Time": 16.75,      # 4:00 PM - 5:30 PM
+    "Linner": 18.5,         # 5:30 PM - 7:30 PM
+    "Dinner": 20.75,        # 7:30 PM - 10:00 PM
+    "Late Dinner": 22.75,   # 10:00 PM - 11:30 PM
+    "Midnight Snack": 0.75, # 11:30 PM - 2:00 AM (represented as 00:45)
+}
 
-# --- MODIFIED: This function now uses the Malaysian timezone ---
-def get_current_context():
-    """Determines the current day and mealtime using the Asia/Kuala_Lumpur timezone."""
-    # Set the timezone to Malaysian time
-    malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
-    now = datetime.now(malaysia_tz)
+# =======================================================================
+#  Metric Calculation Functions
+# =======================================================================
+
+def hit_rate_at_k(recommendations, test_set_ids):
+    """Calculates the Hit Rate."""
+    return 1 if any(rec_id in test_set_ids for rec_id in recommendations) else 0
+
+def precision_at_k(recommendations, test_set_ids):
+    """Calculates Precision@K."""
+    hits = len(set(recommendations).intersection(test_set_ids))
+    return hits / K
+
+def recall_at_k(recommendations, test_set_ids):
+    """Calculates Recall@K."""
+    hits = len(set(recommendations).intersection(test_set_ids))
+    return hits / len(test_set_ids)
+
+def average_precision_at_k(recommendations, test_set_ids):
+    """Calculates Average Precision, rewarding correct rankings."""
+    hits = 0
+    precision_scores = []
+    for i, rec_id in enumerate(recommendations):
+        if rec_id in test_set_ids:
+            hits += 1
+            precision_scores.append(hits / (i + 1))
     
-    day = now.strftime('%A')
-    hour = now.hour
-    minute = now.minute
-    current_time_float = hour + minute / 60.0
+    if not precision_scores: return 0.0
+    return sum(precision_scores) / len(test_set_ids)
 
-    if 4.0 <= current_time_float < 7.0: meal_time = "Suhoor"
-    elif 7.0 <= current_time_float < 10.0: meal_time = "Breakfast"
-    elif 10.0 <= current_time_float < 12.0: meal_time = "Brunch"
-    elif 12.0 <= current_time_float < 16.0: meal_time = "Lunch"
-    elif 16.0 <= current_time_float < 17.5: meal_time = "Tea Time"
-    elif 17.5 <= current_time_float < 19.5: meal_time = "Linner"
-    elif 19.5 <= current_time_float < 22.0: meal_time = "Dinner"
-    elif 22.0 <= current_time_float < 23.5: meal_time = "Late Dinner"
-    else: meal_time = "Midnight Snack"
+# =======================================================================
+#  Main Evaluation Function
+# =======================================================================
+
+def evaluate_model():
+    """Performs the full offline evaluation process with time simulation."""
+    print("--- Starting Offline Recommendation Model Evaluation ---")
+
+    # --- 1. Load Data ---
+    print("Connecting to database and loading data...")
+    load_dotenv()
+    db_url = os.environ.get('DATABASE_URL')
+    if not db_url: raise ValueError("DATABASE_URL not found in .env file.")
+    if db_url.startswith("postgres://"): db_url = db_url.replace("postgres://", "postgresql://", 1)
     
-    # DEBUG: Print the server's understanding of the current time
-    print(f"[DEBUG] Current context (Asia/Kuala_Lumpur): Day={day}, MealTime={meal_time}, Time={now.strftime('%H:%M')}")
+    engine = create_engine(db_url)
+    users_df = pd.read_sql_table('user', engine)
+    reviews_df = pd.read_sql_table('review', engine)
+    restaurants_df = pd.read_sql_table('restaurant', engine)
+    interactions_df = pd.read_sql_table('interaction_log', engine)
+    meals_df = pd.read_sql_table('meal', engine)
     
-    return day, meal_time, current_time_float
+    meals_df['date'] = pd.to_datetime(meals_df['date'])
+    reviews_df['date'] = pd.to_datetime(reviews_df['date'])
+    interactions_df['timestamp'] = pd.to_datetime(interactions_df['timestamp'])
+    print(f"Data loaded successfully: {len(users_df)} users, {len(meals_df)} meals.")
 
-def get_meal_count(user_id, interactions_df):
-    return len(interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'eat')])
+    # --- 2. Identify and Split Data for Test Users ---
+    test_users = [uid for uid in users_df['id'] if get_meal_count(uid, interactions_df) >= MINIMUM_MEALS_FOR_TESTING]
+    if not test_users:
+        print("\nNo users found with enough meal history for testing. Aborting.")
+        return
+    print(f"\nFound {len(test_users)} users with >= {MINIMUM_MEALS_FOR_TESTING} meals for testing.")
 
-# --- Feature Engineering ---
-def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
-    user_meals = meals_df[meals_df['user_id'] == user_id]
-    if user_meals.empty: return {}
-    
-    user_meals_details = pd.merge(user_meals, restaurants_df, left_on='restaurant_id', right_on='id', how='left').dropna(subset=['price_min', 'price_max'])
-    
-    price_min_numeric = pd.to_numeric(user_meals_details['price_min'], errors='coerce')
-    price_max_numeric = pd.to_numeric(user_meals_details['price_max'], errors='coerce')
-    avg_price = (price_min_numeric.mean() + price_max_numeric.mean()) / 2 if not user_meals_details.empty else 30.0
+    all_user_metrics = []
 
-    weekday_meals = user_meals_details[~user_meals_details['day'].isin(['Saturday', 'Sunday'])]
-    weekend_meals = user_meals_details[user_meals_details['day'].isin(['Saturday', 'Sunday'])]
-    
-    disliked_tags = []
-    if not interactions_df.empty:
-        declined_interactions = interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['user_action'] == 'decline')]
-        if not declined_interactions.empty:
-            declined_details = pd.merge(declined_interactions, restaurants_df, left_on='restaurant_id', right_on='id', how='left')
-            disliked_tags = declined_details[['tag_1', 'tag_2', 'tag_3']].stack().value_counts().nlargest(3).index.tolist()
-
-    profile = {
-        'top_tags': user_meals_details[['tag_1', 'tag_2', 'tag_3']].stack().mode().tolist(),
-        'disliked_tags': disliked_tags, 'avg_price': avg_price,
-        'weekday_travel_dist': weekday_meals['distance_travelled'].median() if not weekday_meals.empty and 'distance_travelled' in weekday_meals.columns else 5.0,
-        'weekend_travel_dist': weekend_meals['distance_travelled'].median() if not weekend_meals.empty and 'distance_travelled' in weekend_meals.columns else 15.0,
-    }
-    return profile
-
-def create_implicit_ratings(reviews_df):
-    df = reviews_df.copy()
-    def calculate_score(row):
-        score = float(row['rating'])
-        if row.get('price_satisfaction') == True: score += 1.0
-        if pd.notna(row.get('visit_frequency')) and row['visit_frequency'] > 2: score += 1.0
-        if row.get('price_satisfaction') == False: score -= 0.5
-        return min(7.0, max(1.0, score))
-    df['implicit_rating'] = df.apply(calculate_score, axis=1)
-    return df
-
-# --- Scoring & Models ---
-def calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag):
-    day, meal_time, _ = context
-    score = 0; weights = {'distance': 0.3, 'price': 0.2, 'tag': 0.2, 'popularity': 0.1, 'pattern': 0.2}
-    is_weekend = day in ['Saturday', 'Sunday']
-    expected_dist = user_profile.get('weekend_travel_dist', 15.0) if is_weekend else user_profile.get('weekday_travel_dist', 5.0)
-    if expected_dist > 20: weights['distance'] = 0.2
-    actual_dist = haversine(user['latitude'], user['longitude'], restaurant['latitude'], restaurant['longitude'])
-    score += max(0, 1 - (actual_dist / (expected_dist * 2))) * weights['distance']
-    if user_profile.get('avg_price', 0) < 20: weights['price'] = 0.3
-    restaurant_price = (pd.to_numeric(restaurant['price_min'], errors='coerce') + pd.to_numeric(restaurant['price_max'], errors='coerce')) / 2
-    if pd.notna(restaurant_price) and user_profile.get('avg_price'):
-        score += max(0, 1 - (abs(restaurant_price - user_profile['avg_price']) / user_profile['avg_price'])) * weights['price']
-    restaurant_tags = set([t for t in [restaurant['tag_1'], restaurant['tag_2'], restaurant['tag_3']] if pd.notna(t)])
-    if user_profile.get('top_tags') and restaurant_tags.intersection(set(user_profile['top_tags'])): score += weights['tag']
-    if user_profile.get('disliked_tags') and restaurant_tags.intersection(set(user_profile['disliked_tags'])): score -= 0.3
-    score += min(1, log((restaurant.get('num_google_reviews') or 0) + 1) / 7) * weights['popularity']
-    if predicted_tag and predicted_tag in restaurant_tags: score += weights['pattern']
-    return score
-
-def recommend_for_new_user(user, restaurants_df, meals_df, exclude_ids=[]):
-    return recommend_for_active_user(user, restaurants_df, pd.DataFrame(), pd.DataFrame(), meals_df, exclude_ids, is_new_user=True)
-
-def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False):
-    context = get_current_context()
-    day, meal_time, current_time_float = context
-    user_profile = build_user_profile(user['id'], meals_df, restaurants_df, interactions_df)
-    predicted_tag = None
-    if not is_new_user and not meals_df.empty:
-        pattern_model, encoders = train_pattern_recognition_model(user['id'], meals_df, restaurants_df)
-        if pattern_model:
-            try:
-                day_encoded = encoders['day'].transform([day])[0]; meal_time_encoded = encoders['meal_time'].transform([meal_time])[0]
-                predicted_tag_encoded = pattern_model.predict([[day_encoded, meal_time_encoded]])[0]
-                predicted_tag = encoders['tag'].inverse_transform([predicted_tag_encoded])[0]
-            except Exception: pass
-    if is_new_user:
-        day, meal_time, _ = context
-        popular_now_ids = meals_df[meals_df['meal_time'] == meal_time]['restaurant_id'].value_counts().nlargest(30).index.tolist()
-        restaurants_df['distance'] = restaurants_df.apply(lambda r: haversine(user['latitude'], user['longitude'], r['latitude'], r['longitude']), axis=1)
-        nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
-        candidate_ids = list(dict.fromkeys(popular_now_ids + nearby_ids))
-    else:
-        all_seen_ids = set(interactions_df[interactions_df['user_id'] == user['id']]['restaurant_id'].unique()) | set(exclude_ids)
-        candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
-    candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
-    if candidate_details.empty: return []
-    open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(current_time_float,), axis=1)]
-    if open_candidates.empty: return []
-    scored_recs = [(r['id'], calculate_relevance_score(r, user, user_profile, context, predicted_tag)) for _, r in open_candidates.iterrows()]
-    scored_recs.sort(key=lambda x: x[1], reverse=True)
-    final_rec_ids = [rec_id for rec_id, score in scored_recs if rec_id not in exclude_ids]
-    return final_rec_ids[:15]
-
-def get_svd_recs(user_id, reviews_df, restaurants_df, all_seen_ids):
-    if reviews_df.empty: return []
-    implicit_reviews_df = create_implicit_ratings(reviews_df)
-    reader = Reader(rating_scale=(1, 7)); data = Dataset.load_from_df(implicit_reviews_df[['user_id', 'restaurant_id', 'implicit_rating']], reader)
-    trainset = data.build_full_trainset(); model = SVD(n_factors=50, n_epochs=20, lr_all=0.005, reg_all=0.02); model.fit(trainset)
-    unseen_ids = set(restaurants_df['id']) - all_seen_ids
-    predictions = [model.predict(user_id, rest_id) for rest_id in unseen_ids]
-    predictions.sort(key=lambda x: x.est, reverse=True)
-    return [pred.iid for pred in predictions[:100]]
-
-def train_pattern_recognition_model(user_id, meals_df, restaurants_df):
-    user_meals = meals_df[meals_df['user_id'] == user_id]
-    if len(user_meals) < 10: return None, None
-    training_data = pd.merge(user_meals, restaurants_df, left_on='restaurant_id', right_on='id').dropna(subset=['day', 'meal_time', 'tag_1'])
-    if len(training_data) < 10: return None, None
-    encoders = {'day': LabelEncoder().fit(training_data['day']), 'meal_time': LabelEncoder().fit(training_data['meal_time']), 'tag': LabelEncoder().fit(training_data['tag_1'])}
-    X = pd.DataFrame({'day': encoders['day'].transform(training_data['day']), 'meal_time': encoders['meal_time'].transform(training_data['meal_time'])})
-    y = encoders['tag'].transform(training_data['tag_1'])
-    model = DecisionTreeClassifier(random_state=42).fit(X, y)
-    return model, encoders
-
-# --- Main Orchestrator ---
-def get_recommendations(user_id, exclude_ids=[]):
-    users_df = pd.read_sql_table('user', engine); reviews_df = pd.read_sql_table('review', engine); restaurants_df = pd.read_sql_table('restaurant', engine); interactions_df = pd.read_sql_table('interaction_log', engine); meals_df = pd.read_sql_table('meal', engine)
-    try:
+    # --- 3. Run Evaluation Loop for Each User ---
+    for user_id in test_users:
+        print(f"\n--- Evaluating for User: {user_id} ---")
+        
+        user_meals = meals_df[meals_df['user_id'] == user_id].sort_values('date')
+        split_point = int(len(user_meals) * 0.8)
+        train_meals = user_meals.iloc[:split_point]
+        test_meals = user_meals.iloc[split_point:]
+        
+        max_train_date = train_meals['date'].max()
+        train_reviews = reviews_df[(reviews_df['user_id'] == user_id) & (reviews_df['date'] <= max_train_date)]
+        train_interactions = interactions_df[(interactions_df['user_id'] == user_id) & (interactions_df['timestamp'] <= max_train_date)]
+        
         current_user = users_df[users_df['id'] == user_id].iloc[0].to_dict()
-    except IndexError: return []
-    if not meals_df.empty and not users_df.empty and not restaurants_df.empty:
-        user_locs = users_df.set_index('id')[['latitude', 'longitude']].to_dict('index')
-        rest_locs = restaurants_df.set_index('id')[['latitude', 'longitude']].to_dict('index')
-        meals_df['user_lat'] = meals_df['user_id'].map(lambda x: user_locs.get(x, {}).get('latitude'))
-        meals_df['user_lon'] = meals_df['user_id'].map(lambda x: user_locs.get(x, {}).get('longitude'))
-        meals_df['rest_lat'] = meals_df['restaurant_id'].map(lambda x: rest_locs.get(x, {}).get('latitude'))
-        meals_df['rest_lon'] = meals_df['restaurant_id'].map(lambda x: rest_locs.get(x, {}).get('longitude'))
-        meals_df['distance_travelled'] = meals_df.apply(lambda r: haversine(r['user_lat'], r['user_lon'], r['rest_lat'], r['rest_lon']), axis=1)
-        meals_df.drop(columns=['user_lat', 'user_lon', 'rest_lat', 'rest_lon'], inplace=True)
-    meal_count = get_meal_count(user_id, interactions_df)
-    if meal_count < 15:
-        return recommend_for_new_user(current_user, restaurants_df, meals_df, exclude_ids)
-    else:
-        return recommend_for_active_user(current_user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids)
+        
+        user_predictions = []
+        
+        # --- 4. NEW: Loop through each future meal to simulate the context ---
+        for _, test_meal in test_meals.iterrows():
+            ground_truth_id = test_meal['restaurant_id']
+            simulated_day = test_meal['day']
+            simulated_meal_time = test_meal['meal_time']
+            simulated_time_float = MEAL_TIME_TO_HOUR_MAP.get(simulated_meal_time, 14.0) # Default to Lunch if not found
+            
+            # This is the context at the time of the meal
+            simulated_context = (simulated_day, simulated_meal_time, simulated_time_float)
+            
+            # Generate recommendations using the training data and SIMULATED context
+            # We need to modify the recommender call to accept the simulated context
+            # For now, we will manually filter the results as a proof of concept
+            
+            recommendations = recommend_for_active_user(
+                user=current_user,
+                restaurants_df=restaurants_df,
+                interactions_df=train_interactions,
+                reviews_df=train_reviews,
+                meals_df=train_meals,
+                exclude_ids=[] 
+            )
+            
+            # Manually filter the recommendations to only include open restaurants at the simulated time
+            rec_details = restaurants_df[restaurants_df['id'].isin(recommendations)]
+            open_recs_details = rec_details[rec_details.apply(is_restaurant_open, args=(simulated_time_float,), axis=1)]
+            
+            # Re-order based on original recommendation list and take top K
+            open_recs_ordered = [rec for rec in recommendations if rec in open_recs_details['id'].tolist()]
+            final_recommendations = open_recs_ordered[:K]
+
+            user_predictions.append({
+                'recommendations': final_recommendations,
+                'ground_truth': {ground_truth_id} # Use a set for efficient lookup
+            })
+
+        # --- 5. Calculate Metrics for this user ---
+        if not user_predictions: continue
+            
+        user_hit_rate = sum(hit_rate_at_k(p['recommendations'], p['ground_truth']) for p in user_predictions) / len(user_predictions)
+        user_precision = sum(precision_at_k(p['recommendations'], p['ground_truth']) for p in user_predictions) / len(user_predictions)
+        user_recall = sum(recall_at_k(p['recommendations'], p['ground_truth']) for p in user_predictions) / len(user_predictions)
+        user_ap = sum(average_precision_at_k(p['recommendations'], p['ground_truth']) for p in user_predictions) / len(user_predictions)
+        
+        all_user_metrics.append({
+            'user_id': user_id, 'hit_rate': user_hit_rate, 'precision_at_k': user_precision,
+            'recall_at_k': user_recall, 'average_precision_at_k': user_ap
+        })
+        print(f"User Metrics: HitRate={user_hit_rate:.2f}, Precision@{K}={user_precision:.2f}, Recall@{K}={user_recall:.2f}, AP@{K}={user_ap:.2f}")
+
+    # --- 6. Aggregate and Display Final Results ---
+    if not all_user_metrics:
+        print("\nEvaluation could not be completed.")
+        return
+
+    results_df = pd.DataFrame(all_user_metrics)
+    mean_hit_rate = results_df['hit_rate'].mean()
+    mean_precision = results_df['precision_at_k'].mean()
+    mean_recall = results_df['recall_at_k'].mean()
+    mean_average_precision = results_df['average_precision_at_k'].mean()
+
+    print("\n\n--- Overall Model Performance ---")
+    print(f"Total Users Tested: {len(results_df)}")
+    print(f"Hit Rate @ {K}: {mean_hit_rate:.2%}")
+    print(f"Precision @ {K}: {mean_precision:.2%}")
+    print(f"Recall @ {K}: {mean_recall:.2%}")
+    print(f"Mean Average Precision (MAP) @ {K}: {mean_average_precision:.2%}")
+    print("---------------------------------")
+
+if __name__ == '__main__':
+    evaluate_model()
