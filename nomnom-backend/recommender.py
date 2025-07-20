@@ -161,7 +161,6 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
             user_interactions = interactions_df[interactions_df['user_id'] == user['id']]
             all_seen_ids.update(user_interactions['restaurant_id'].unique())
         
-        # --- FIX: SVD Fallback Logic ---
         candidate_ids = get_svd_recs(user['id'], reviews_df, restaurants_df, all_seen_ids)
         print(f"[DEBUG] Warm-start (SVD) generated {len(candidate_ids)} candidates.")
         
@@ -198,7 +197,6 @@ def get_svd_recs(user_id, reviews_df, restaurants_df, all_seen_ids):
     predictions.sort(key=lambda x: x.est, reverse=True)
     return [pred.iid for pred in predictions[:100]]
 
-# --- NEW: Content-Based Model for Fallback ---
 def get_content_based_recs(user_id, restaurants_df, meals_df, all_seen_ids):
     """Generates recommendations based on content (tags) using meal history."""
     user_eaten_restaurants = meals_df[meals_df['user_id'] == user_id]
@@ -212,7 +210,9 @@ def get_content_based_recs(user_id, restaurants_df, meals_df, all_seen_ids):
     user_profile_indices = restaurants_df[restaurants_df['id'].isin(eaten_restaurant_ids)].index
     if len(user_profile_indices) == 0: return []
     
-    user_profile_vector = tfidf_matrix[user_profile_indices].mean(axis=0)
+    # FIX: Convert the numpy.matrix to a numpy.ndarray to prevent the error
+    user_profile_vector = np.asarray(tfidf_matrix[user_profile_indices].mean(axis=0))
+    
     cosine_sim = cosine_similarity(user_profile_vector, tfidf_matrix)
     sim_scores = sorted(list(enumerate(cosine_sim[0])), key=lambda x: x[1], reverse=True)
     
@@ -221,7 +221,7 @@ def get_content_based_recs(user_id, restaurants_df, meals_df, all_seen_ids):
         restaurant_id = restaurants_df.iloc[idx]['id']
         if restaurant_id not in all_seen_ids:
             recommended_ids.append(restaurant_id)
-        if len(recommended_ids) >= 50: # Generate a good number of candidates
+        if len(recommended_ids) >= 50:
             break
     return recommended_ids
 
