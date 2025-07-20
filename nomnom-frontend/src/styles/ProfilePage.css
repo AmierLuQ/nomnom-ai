@@ -62,7 +62,7 @@
 
 /* Profile Card */
 .profile-card {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-image: linear-gradient(#FF7E21, #FC3B48);
     border-radius: 20px;
     padding: 24px;
     display: flex;
@@ -88,7 +88,8 @@
 
 .profile-username {
     font-size: 22px;
-    font-weight: bold;
+    font-family: "Inter";
+    font-weight: bolder;
     margin: 0;
 }
 
@@ -193,10 +194,11 @@
 .history-item-mealtime {
     background-color: #41EAD4;
     color: #011627;
+    font-family: "DM Sans", sans-serif;
     font-size: 10px;
     font-weight: bold;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 20px;
 }
 
 .history-item-date {
