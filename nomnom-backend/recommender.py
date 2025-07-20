@@ -22,8 +22,7 @@ engine = create_engine(db_url or 'sqlite:///nomnom.db')
 
 # --- Helper & Context Functions ---
 def haversine(lat1, lon1, lat2, lon2):
-    if any(v is None or not isinstance(v, (int, float)) for v in [lat1, lon1, lat2, lon2]):
-        return float('inf')
+    if any(v is None or not isinstance(v, (int, float)) for v in [lat1, lon1, lat2, lon2]): return float('inf')
     R = 6371; lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2]); dlon = lon2 - lon1; dlat = lat2 - lat1; a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2; c = 2 * atan2(sqrt(a), sqrt(1 - a)); return R * c
 
 def is_restaurant_open(restaurant_row, current_time_float):
@@ -34,20 +33,16 @@ def is_restaurant_open(restaurant_row, current_time_float):
     try:
         open_hour, open_min, _ = map(int, opening_time_str.split(':'))
         close_hour, close_min, _ = map(int, closing_time_str.split(':'))
-        open_time_float = open_hour + open_min / 60.0
-        close_time_float = close_hour + close_min / 60.0
+        open_time_float = open_hour + open_min / 60.0; close_time_float = close_hour + close_min / 60.0
         if close_time_float < open_time_float:
             return current_time_float >= open_time_float or current_time_float < close_time_float
         else:
             return open_time_float <= current_time_float < close_time_float
-    except (ValueError, TypeError):
-        return True
+    except (ValueError, TypeError): return True
 
 def get_current_context():
-    malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
-    now = datetime.now(malaysia_tz)
-    day = now.strftime('%A')
-    hour = now.hour; minute = now.minute; current_time_float = hour + minute / 60.0
+    malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur"); now = datetime.now(malaysia_tz)
+    day = now.strftime('%A'); hour = now.hour; minute = now.minute; current_time_float = hour + minute / 60.0
     if 4.0 <= current_time_float < 7.0: meal_time = "Suhoor"
     elif 7.0 <= current_time_float < 10.0: meal_time = "Breakfast"
     elif 10.0 <= current_time_float < 12.0: meal_time = "Brunch"
@@ -59,20 +54,10 @@ def get_current_context():
     else: meal_time = "Midnight Snack"
     return day, meal_time, current_time_float
 
-# --- MODIFIED: This function now correctly uses the dataframe passed to it ---
-def get_meal_count(user_id, meals_or_interactions_df):
-    """
-    Counts the number of meals for a user. It can accept either the meals_df
-    or the interactions_df by checking which columns are present.
-    """
-    if 'user_action' in meals_or_interactions_df.columns:
-        # This is the interactions_df from the live app
-        return len(meals_or_interactions_df[(meals_or_interactions_df['user_id'] == user_id) & (meals_or_interactions_df['user_action'] == 'eat')])
-    else:
-        # This is the meals_df from the evaluation script
-        return len(meals_or_interactions_df[meals_or_interactions_df['user_id'] == user_id])
+def get_meal_count(user_id, meals_df):
+    return len(meals_df[meals_df['user_id'] == user_id])
 
-# --- Feature Engineering ---
+# --- Feature Engineering & Scoring ---
 def build_user_profile(user_id, meals_df, restaurants_df, interactions_df):
     user_meals = meals_df[meals_df['user_id'] == user_id]
     if user_meals.empty: return {}
@@ -107,7 +92,6 @@ def create_implicit_ratings(reviews_df):
     df['implicit_rating'] = df.apply(calculate_score, axis=1)
     return df
 
-# --- Scoring & Models ---
 def calculate_relevance_score(restaurant, user, user_profile, context, predicted_tag):
     day, meal_time, _ = context
     score = 0; weights = {'distance': 0.3, 'price': 0.2, 'tag': 0.2, 'popularity': 0.1, 'pattern': 0.2}
@@ -127,11 +111,15 @@ def calculate_relevance_score(restaurant, user, user_profile, context, predicted
     if predicted_tag and predicted_tag in restaurant_tags: score += weights['pattern']
     return score
 
+# --- Recommendation Models ---
 def recommend_for_new_user(user, restaurants_df, meals_df, exclude_ids=[]):
     return recommend_for_active_user(user, restaurants_df, pd.DataFrame(), pd.DataFrame(), meals_df, exclude_ids, is_new_user=True)
 
-def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False):
-    context = get_current_context()
+# --- MODIFIED: This function now accepts an optional context for testing ---
+def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df, meals_df, exclude_ids=[], is_new_user=False, context=None):
+    if context is None: # If no context is provided (live app), get the current time
+        context = get_current_context()
+    
     day, meal_time, current_time_float = context
     user_profile = build_user_profile(user['id'], meals_df, restaurants_df, interactions_df)
     predicted_tag = None
@@ -144,7 +132,6 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
                 predicted_tag = encoders['tag'].inverse_transform([predicted_tag_encoded])[0]
             except Exception: pass
     if is_new_user:
-        day, meal_time, _ = context
         popular_now_ids = meals_df[meals_df['meal_time'] == meal_time]['restaurant_id'].value_counts().nlargest(30).index.tolist()
         restaurants_df['distance'] = restaurants_df.apply(lambda r: haversine(user['latitude'], user['longitude'], r['latitude'], r['longitude']), axis=1)
         nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
@@ -198,11 +185,11 @@ def get_recommendations(user_id, exclude_ids=[]):
         meals_df['distance_travelled'] = meals_df.apply(lambda r: haversine(r['user_lat'], r['user_lon'], r['rest_lat'], r['rest_lon']), axis=1)
         meals_df.drop(columns=['user_lat', 'user_lon', 'rest_lat', 'rest_lon'], inplace=True)
     
-    # MODIFIED: Pass the correct dataframe based on the context
-    if __name__ == '__main__': # This will be false when run from app.py
-        meal_count = get_meal_count(user_id, meals_df)
-    else:
-        meal_count = get_meal_count(user_id, interactions_df)
+    # Use the correct dataframe to count meals based on context
+    # In the live app, interactions_df is the source of truth for "active" status
+    # In evaluation, meals_df is the source of truth
+    df_for_counting = interactions_df if not interactions_df.empty else meals_df
+    meal_count = get_meal_count(user_id, df_for_counting)
     
     if meal_count < 15:
         return recommend_for_new_user(current_user, restaurants_df, meals_df, exclude_ids)
