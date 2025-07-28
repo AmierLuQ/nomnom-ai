@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from flask_bcrypt import Bcrypt
+import numpy as np # Import numpy for NaN checking
 
 # A simple bcrypt instance for hashing, independent of the Flask app
 bcrypt = Bcrypt()
@@ -69,9 +70,15 @@ def run_seeder():
         
         print("\n--- Inserting New Data ---")
         
-        # --- Users (with password hashing) ---
-        # Correctly points to the data folder
-        users_df = pd.read_csv('../data/users.csv').replace({pd.NA: None})
+        # --- Users (with password hashing and data cleaning) ---
+        users_df = pd.read_csv('data/users.csv')
+        
+        # FIX: Pre-process the dataframe to handle potential NaT/NaN values
+        # Convert date/datetime columns to object type to allow for None
+        for col in ['dob', 'last_login', 'created_at']:
+            if col in users_df.columns:
+                users_df[col] = users_df[col].astype(object).where(pd.notna(users_df[col]), None)
+
         user_records = users_df.to_dict('records')
         
         from app.models import User
@@ -89,19 +96,19 @@ def run_seeder():
         print("✅ Users committed successfully.")
 
         # --- Other tables (can use fast to_sql method) ---
-        restaurants_df = pd.read_csv('../data/restaurants.csv').replace({pd.NA: None})
+        restaurants_df = pd.read_csv('data/restaurants.csv').replace({pd.NA: None})
         restaurants_df.to_sql('restaurant', engine, if_exists='append', index=False)
         print(f"-> Inserted {len(restaurants_df)} restaurants.")
         
-        meals_df = pd.read_csv('../data/meals.csv').replace({pd.NA: None})
+        meals_df = pd.read_csv('data/meals.csv').replace({pd.NA: None})
         meals_df.to_sql('meal', engine, if_exists='append', index=False)
         print(f"-> Inserted {len(meals_df)} meals.")
         
-        reviews_df = pd.read_csv('../data/reviews.csv').replace({pd.NA: None})
+        reviews_df = pd.read_csv('data/reviews.csv').replace({pd.NA: None})
         reviews_df.to_sql('review', engine, if_exists='append', index=False)
         print(f"-> Inserted {len(reviews_df)} reviews.")
         
-        interactions_df = pd.read_csv('../data/interaction_logs.csv').replace({pd.NA: None})
+        interactions_df = pd.read_csv('data/interaction_logs.csv').replace({pd.NA: None})
         interactions_df.to_sql('interaction_log', engine, if_exists='append', index=False)
         print(f"-> Inserted {len(interactions_df)} interactions.")
 

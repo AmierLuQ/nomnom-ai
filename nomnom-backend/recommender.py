@@ -45,7 +45,7 @@ def is_restaurant_open(restaurant_row, current_time_float):
         return True
 
 def get_current_context():
-    malaysia_tz = ZoneInfo("Europe/London")
+    malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
     now = datetime.now(malaysia_tz)
     day = now.strftime('%A')
     hour = now.hour; minute = now.minute; current_time_float = hour + minute / 60.0
