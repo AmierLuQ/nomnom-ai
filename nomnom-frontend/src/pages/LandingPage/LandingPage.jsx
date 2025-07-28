@@ -1,20 +1,38 @@
-import React, "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "./LandingPage.css";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import "./LandingPage.css"; // UPDATED: Path changed
 
+// UPDATED: Import logo assets
 import nomnomLogo from '../../assets/images/nomnom-ai logo.PNG';
 import coralLogo from '../../assets/images/onside_coral_nomnom-ai logo.PNG';
 import orangeLogo from '../../assets/images/onside_orange_nomnom-ai logo.PNG';
 
+
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [indicatorActive, setIndicatorActive] = useState(false);
+  const featuresRef = useRef(null); // Ref to the first feature card
 
   const handleStart = () => {
     navigate("/login");
   };
 
+  const toggleIndicator = () => {
+    if (!indicatorActive) {
+      // Scroll down to features section
+      const offsetTop = featuresRef.current.offsetTop - 96;
+      window.scrollTo({ top: offsetTop, behavior: "smooth" });
+    } else {
+      // Scroll back to top
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setIndicatorActive(!indicatorActive);
+  };
+
   return (
     <div className="landing-container">
+      {/* UPDATED: Use imported logo */}
       <img
         src={nomnomLogo}
         alt="NomNom AI Logo"
@@ -32,8 +50,17 @@ export default function LandingPage() {
         Get Started
       </button>
 
-      <div className="features-section">
+      {/* Swipe Indicator */}
+      <div
+        className={`swipe-indicator ${indicatorActive ? "active" : ""}`}
+        onClick={toggleIndicator}
+      >
+        {indicatorActive ? <FaChevronUp /> : <FaChevronDown />}
+      </div>
+
+      <div className="features-section" ref={featuresRef}>
         <div className="feature-card">
+          {/* UPDATED: Use imported logo */}
           <img
             src={coralLogo}
             alt="AI Recommendations"
@@ -46,6 +73,7 @@ export default function LandingPage() {
         </div>
 
         <div className="feature-card">
+          {/* UPDATED: Use imported logo */}
           <img
             src={orangeLogo}
             alt="Quick Decisions"
@@ -58,6 +86,7 @@ export default function LandingPage() {
         </div>
 
         <div className="feature-card">
+          {/* UPDATED: Use imported logo */}
           <img
             src={coralLogo}
             alt="Budget-Friendly"
@@ -70,6 +99,7 @@ export default function LandingPage() {
         </div>
 
         <div className="feature-card">
+          {/* UPDATED: Use imported logo */}
           <img
             src={orangeLogo}
             alt="Minimal Effort"
