@@ -114,7 +114,7 @@ def build_user_profile(user_id, meals_df, restaurants_df):
     }
     return profile
 
-def calculate_relevance_score(restaurant, user, user_profile, context):
+def calculate_relevance_score(restaurant, user, user_profile, context, user_eaten_ids):
     """Calculates a relevance score based on a stable set of weights."""
     day, _, _ = context
     score = 0.0
@@ -140,13 +140,18 @@ def calculate_relevance_score(restaurant, user, user_profile, context):
     normalized_popularity = min(1, popularity / 7)
     score += normalized_popularity * weights['popularity']
     
+    # --- NEW: Revisit Penalty ---
+    # Apply a small penalty if the user has already eaten at this restaurant.
+    if restaurant['id'] in user_eaten_ids:
+        score *= 0.8  # e.g., reduce the score by 20%
+    
     return score
 
 # =======================================================================
 # Recommendation Models
 # =======================================================================
 
-def get_content_based_recs(user_id, restaurants_df, meals_df, seen_ids):
+def get_content_based_recs(user_id, restaurants_df, meals_df):
     """Generates recommendations based on the content (tags) of a user's meal history."""
     user_meals = meals_df[meals_df['user_id'] == user_id]
     eaten_ids = user_meals['restaurant_id'].unique()
@@ -163,39 +168,28 @@ def get_content_based_recs(user_id, restaurants_df, meals_df, seen_ids):
     cosine_sim = cosine_similarity(user_profile_vector, tfidf_matrix)
     sim_scores = sorted(list(enumerate(cosine_sim[0])), key=lambda x: x[1], reverse=True)
     
-    recs = []
-    for idx, score in sim_scores:
-        rest_id = restaurants_df.iloc[idx]['id']
-        if rest_id not in seen_ids and rest_id not in eaten_ids:
-            recs.append(rest_id)
-        if len(recs) >= 50: break
-    return recs
+    # Return all ranked restaurants, filtering will happen later
+    return [restaurants_df.iloc[idx]['id'] for idx, score in sim_scores]
 
-# --- NEW: Dedicated function for new users (Cold-Start) ---
 def recommend_for_new_user(user, restaurants_df, meals_df, exclude_ids=[], context=None):
     """Generates recommendations for new users based on popularity and proximity."""
     if context is None:
         context = get_current_context()
     day, meal_time, current_time_float = context
 
-    # Find restaurants popular for the current meal time
     popular_now_ids = meals_df[meals_df['meal_time'] == meal_time]['restaurant_id'].value_counts().nlargest(30).index.tolist()
     
-    # Find restaurants that are nearby
     restaurants_df['distance'] = restaurants_df.apply(lambda r: haversine(user['latitude'], user['longitude'], r['latitude'], r['longitude']), axis=1)
     nearby_ids = restaurants_df.sort_values('distance').head(30)['id'].tolist()
     
-    # Combine and de-duplicate the lists
     candidate_ids = list(dict.fromkeys(popular_now_ids + nearby_ids))
     
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: return []
 
-    # Filter for open restaurants
     open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(current_time_float,), axis=1)]
     if open_candidates.empty: return []
 
-    # Simple ranking by popularity (Google reviews)
     open_candidates['popularity'] = open_candidates['num_google_reviews'].fillna(0)
     ranked_recs = open_candidates.sort_values('popularity', ascending=False)
     
@@ -207,30 +201,30 @@ def recommend_for_active_user(user, restaurants_df, interactions_df, reviews_df,
     """Main recommendation logic for an active user."""
     if context is None:
         context = get_current_context()
-    day, meal_time, current_time_float = context
     
     user_profile = build_user_profile(user['id'], meals_df, restaurants_df)
     
-    all_seen_ids = set(exclude_ids)
     user_eaten_ids = set(meals_df[meals_df['user_id'] == user['id']]['restaurant_id'])
-    all_seen_ids.update(user_eaten_ids)
     
-    candidate_ids = get_content_based_recs(user['id'], restaurants_df, meals_df, all_seen_ids)
+    # --- FIX: Generate candidates without pre-filtering eaten restaurants ---
+    candidate_ids = get_content_based_recs(user['id'], restaurants_df, meals_df)
 
     candidate_details = restaurants_df[restaurants_df['id'].isin(candidate_ids)]
     if candidate_details.empty: return []
 
-    open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(current_time_float,), axis=1)]
+    open_candidates = candidate_details[candidate_details.apply(is_restaurant_open, args=(context[2],), axis=1)]
     if open_candidates.empty: return []
     
     scored_recs = []
     for _, restaurant in open_candidates.iterrows():
-        score = calculate_relevance_score(restaurant, user, user_profile, context)
+        # --- FIX: Pass user_eaten_ids to the scoring function ---
+        score = calculate_relevance_score(restaurant, user, user_profile, context, user_eaten_ids)
         scored_recs.append((restaurant['id'], score))
         
     scored_recs.sort(key=lambda x: x[1], reverse=True)
     
-    final_rec_ids = [rec_id for rec_id, score in scored_recs]
+    # Filter out restaurants from the current session (exclude_ids) at the very end
+    final_rec_ids = [rec_id for rec_id, score in scored_recs if rec_id not in exclude_ids]
     
     return final_rec_ids[:15]
 
