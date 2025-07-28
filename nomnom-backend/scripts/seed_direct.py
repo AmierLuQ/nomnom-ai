@@ -1,12 +1,23 @@
+# =======================================================================
+# NomNom AI: Direct Database Seeder
+# This script connects directly to the database for robust seeding.
+# It should be run from the `scripts` directory.
+# =======================================================================
+
+# --- Path Correction ---
+# Allows the script to find the main 'app' module from the parent directory
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# ---------------------
+
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-import sys
 from flask_bcrypt import Bcrypt
 
-# A simple bcrypt instance for hashing
+# A simple bcrypt instance for hashing, independent of the Flask app
 bcrypt = Bcrypt()
 
 def run_seeder():
@@ -14,7 +25,11 @@ def run_seeder():
     Main function to connect, seed, and verify the database.
     """
     print("--- Direct Seeder Initializing ---")
-    load_dotenv()
+    
+    # --- Load Environment Variables ---
+    # Looks for the .env file in the parent directory (project root)
+    dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+    load_dotenv(dotenv_path=dotenv_path)
 
     db_url = os.environ.get('DATABASE_URL')
     if not db_url:
@@ -36,11 +51,12 @@ def run_seeder():
 
     # --- Step 1: Ensure tables exist using the app context ---
     try:
-        from app import db, app
+        from app import db, create_app
+        app = create_app() # Create an app instance to get the context
         with app.app_context():
             print("\n--- Ensuring tables exist ---")
             db.drop_all() # Wipe the database completely
-            db.create_all() # Recreate the schema
+            db.create_all() # Recreate the schema from models.py
             print("Tables created successfully.")
     except Exception as e:
         print(f"❌ ERROR: Could not create tables using app context. {e}")
@@ -54,38 +70,38 @@ def run_seeder():
         print("\n--- Inserting New Data ---")
         
         # --- Users (with password hashing) ---
-        users_df = pd.read_csv('users.csv').replace({pd.NA: None})
-        for index, row in users_df.iterrows():
-            # Ensure password is a string before hashing
-            password_str = str(row['password']) if pd.notna(row['password']) else "default_password"
-            hashed_pw = bcrypt.generate_password_hash(password_str).decode('utf-8')
-            
-            insert_query = text("""
-                INSERT INTO "user" (id, username, name, email, phone, dob, age, gender, location, latitude, longitude, password)
-                VALUES (:id, :username, :name, :email, :phone, :dob, :age, :gender, :location, :latitude, :longitude, :password)
-            """)
-            session.execute(insert_query, {**row, 'password': hashed_pw})
-        print(f"-> Staged {len(users_df)} users for insertion.")
+        # Correctly points to the data folder
+        users_df = pd.read_csv('../data/users.csv').replace({pd.NA: None})
+        user_records = users_df.to_dict('records')
         
-        # --- FIX: Commit the users first to satisfy foreign key constraints ---
+        from app.models import User
+        for record in user_records:
+            password_str = str(record['password']) if pd.notna(record['password']) else "default_password"
+            record['password'] = bcrypt.generate_password_hash(password_str).decode('utf-8')
+            new_user = User(**record)
+            session.add(new_user)
+
+        print(f"-> Staged {len(user_records)} users for insertion.")
+        
+        # --- Commit the users first to satisfy foreign key constraints ---
         print("--- Committing users to the database... ---")
         session.commit()
         print("✅ Users committed successfully.")
 
         # --- Other tables (can use fast to_sql method) ---
-        restaurants_df = pd.read_csv('restaurants.csv').replace({pd.NA: None})
+        restaurants_df = pd.read_csv('../data/restaurants.csv').replace({pd.NA: None})
         restaurants_df.to_sql('restaurant', engine, if_exists='append', index=False)
         print(f"-> Inserted {len(restaurants_df)} restaurants.")
         
-        meals_df = pd.read_csv('meals.csv').replace({pd.NA: None})
+        meals_df = pd.read_csv('../data/meals.csv').replace({pd.NA: None})
         meals_df.to_sql('meal', engine, if_exists='append', index=False)
         print(f"-> Inserted {len(meals_df)} meals.")
         
-        reviews_df = pd.read_csv('reviews.csv').replace({pd.NA: None})
+        reviews_df = pd.read_csv('../data/reviews.csv').replace({pd.NA: None})
         reviews_df.to_sql('review', engine, if_exists='append', index=False)
         print(f"-> Inserted {len(reviews_df)} reviews.")
         
-        interactions_df = pd.read_csv('interaction_logs.csv').replace({pd.NA: None})
+        interactions_df = pd.read_csv('../data/interaction_logs.csv').replace({pd.NA: None})
         interactions_df.to_sql('interaction_log', engine, if_exists='append', index=False)
         print(f"-> Inserted {len(interactions_df)} interactions.")
 

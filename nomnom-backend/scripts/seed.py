@@ -1,11 +1,26 @@
-import pandas as pd
-from app import app, db, User, Restaurant, Meal, Review, InteractionLog, bcrypt
-from dotenv import load_dotenv
+# =======================================================================
+# NomNom AI: Database Seeder
+# This script should be run from the `scripts` directory.
+# =======================================================================
+
+# --- Path Correction ---
+# Allows the script to find the main 'app' module from the parent directory
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# ---------------------
+
+import pandas as pd
+from dotenv import load_dotenv
 from datetime import datetime
 import numpy as np
 
-load_dotenv() 
+# --- Application Imports (for factory pattern) ---
+from app import create_app, db, bcrypt
+from app.models import User, Restaurant, Meal, Review, InteractionLog
+
+# Create a Flask app instance to work with the database
+app = create_app()
 
 def seed_data():
     """
@@ -14,11 +29,14 @@ def seed_data():
     """
     print("Starting the seeding process...")
 
-    # --- ADD THIS BLOCK FOR DEBUGGING ---
+    # --- Load Environment Variables ---
+    # Looks for the .env file in the parent directory (project root)
+    dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+    load_dotenv(dotenv_path=dotenv_path)
+    
     db_url_from_env = os.environ.get('DATABASE_URL')
     print(f"\n[DEBUG] Connecting to database specified in .env file:")
     print(f"[DEBUG] {db_url_from_env}\n")
-    # ------------------------------------
     
     with app.app_context():
         print("Dropping all tables...")
@@ -28,11 +46,13 @@ def seed_data():
         print("Tables created successfully.")
 
         try:
+            # --- Define base path for data files ---
+            data_path = os.path.join(os.path.dirname(__file__), '..', 'data')
+
             # --- 1. Prepare Users ---
             print("\nPreparing users...")
-            users_df = pd.read_csv('users.csv')
+            users_df = pd.read_csv(os.path.join(data_path, 'users.csv'))
             for _, row in users_df.iterrows():
-                # THIS IS THE CRITICAL FIX: HASH THE PASSWORD
                 hashed_pw = bcrypt.generate_password_hash(row['password']).decode('utf-8')
                 
                 dob = None
@@ -47,7 +67,7 @@ def seed_data():
 
             # --- 2. Prepare Restaurants ---
             print("\nPreparing restaurants...")
-            restaurants_df = pd.read_csv('restaurants.csv').replace({np.nan: None})
+            restaurants_df = pd.read_csv(os.path.join(data_path, 'restaurants.csv')).replace({np.nan: None})
             for _, row in restaurants_df.iterrows():
                 restaurant = Restaurant(**row.to_dict())
                 db.session.add(restaurant)
@@ -55,7 +75,7 @@ def seed_data():
 
             # --- 3. Prepare Meals ---
             print("\nPreparing meals...")
-            meals_df = pd.read_csv('meals.csv').replace({np.nan: None})
+            meals_df = pd.read_csv(os.path.join(data_path, 'meals.csv')).replace({np.nan: None})
             for _, row in meals_df.iterrows():
                 meal_date = None
                 if pd.notna(row['date']):
@@ -69,7 +89,7 @@ def seed_data():
 
             # --- 4. Prepare Reviews ---
             print("\nPreparing reviews...")
-            reviews_df = pd.read_csv('reviews.csv').replace({np.nan: None})
+            reviews_df = pd.read_csv(os.path.join(data_path, 'reviews.csv')).replace({np.nan: None})
             for _, row in reviews_df.iterrows():
                 review_date = None
                 if pd.notna(row['date']):
@@ -83,7 +103,7 @@ def seed_data():
 
             # --- 5. Prepare Interaction Logs ---
             print("\nPreparing interaction logs...")
-            interactions_df = pd.read_csv('interaction_logs.csv').replace({np.nan: None})
+            interactions_df = pd.read_csv(os.path.join(data_path, 'interaction_logs.csv')).replace({np.nan: None})
             for _, row in interactions_df.iterrows():
                 timestamp = None
                 if pd.notna(row['timestamp']):

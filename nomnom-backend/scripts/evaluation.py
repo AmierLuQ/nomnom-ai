@@ -1,24 +1,32 @@
 # =======================================================================
 # NomNom AI: Offline Evaluation Script (with Detailed Metrics)
 # =======================================================================
+
+# --- Path Correction ---
+# This block allows the script to be run from the 'scripts' folder and still
+# find the main application modules (like 'recommender').
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# ---------------------
+
 import pandas as pd
 from sqlalchemy import create_engine
-import os
 from dotenv import load_dotenv
 import warnings
 import numpy as np
 
-
+# Import the core recommendation logic from your existing file
 from recommender import recommend_for_active_user, get_meal_count, haversine
 
 # Suppress UserWarning from sklearn about feature names
 warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
 
 # --- Configuration ---
-MINIMUM_MEALS_FOR_TESTING = 20 
-K = 10 # UPDATED: Using @10 for all metrics
+MINIMUM_MEALS_FOR_TESTING = 20
+K = 10 # Using @10 for all metrics
 
-
+# Maps a mealtime name to a representative float hour
 MEAL_TIME_TO_HOUR_MAP = {
     "Suhoor": 5.5, "Breakfast": 8.5, "Brunch": 11.0, "Lunch": 14.0,
     "Tea Time": 16.75, "Linner": 18.5, "Dinner": 20.75, "Late Dinner": 22.75,
@@ -32,20 +40,20 @@ def calculate_all_metrics(recommendations, ground_truth_ids, k):
     """Calculates and prints all metrics for a single prediction."""
     
     is_hit = 1 if any(rec in ground_truth_ids for rec in recommendations) else 0
-    print(f"    - Hit Rate @{k}:")
-    print(f"      Formula: 1 if (Recommended ∩ GroundTruth) > 0 else 0")
-    print(f"      Calculation: {'1 (Hit!)' if is_hit else '0 (Miss)'}")
+    print(f"     - Hit Rate @{k}:")
+    print(f"       Formula: 1 if (Recommended ∩ GroundTruth) > 0 else 0")
+    print(f"       Calculation: {'1 (Hit!)' if is_hit else '0 (Miss)'}")
 
     hits = len(set(recommendations).intersection(ground_truth_ids))
     precision = hits / k if k > 0 else 0
-    print(f"    - Precision @{k}:")
-    print(f"      Formula: |Recommended ∩ GroundTruth| / k")
-    print(f"      Calculation: {hits} / {k} = {precision:.4f}")
+    print(f"     - Precision @{k}:")
+    print(f"       Formula: |Recommended ∩ GroundTruth| / k")
+    print(f"       Calculation: {hits} / {k} = {precision:.4f}")
 
     recall = hits / len(ground_truth_ids) if ground_truth_ids else 0
-    print(f"    - Recall @{k}:")
-    print(f"      Formula: |Recommended ∩ GroundTruth| / |GroundTruth|")
-    print(f"      Calculation: {hits} / {len(ground_truth_ids)} = {recall:.4f}")
+    print(f"     - Recall @{k}:")
+    print(f"       Formula: |Recommended ∩ GroundTruth| / |GroundTruth|")
+    print(f"       Calculation: {hits} / {len(ground_truth_ids)} = {recall:.4f}")
 
     ap_hits = 0; ap_sum = 0; ap_steps = []
     for i, rec_id in enumerate(recommendations):
@@ -56,19 +64,19 @@ def calculate_all_metrics(recommendations, ground_truth_ids, k):
             ap_steps.append(f"(Hit {ap_hits} at pos {i+1} -> Precision={precision_at_i:.2f})")
     
     ap = ap_sum / len(ground_truth_ids) if ground_truth_ids else 0
-    print(f"    - Average Precision @{k}:")
-    print(f"      Formula: (Σ [Precision of each hit]) / |GroundTruth|")
-    if ap_steps: print(f"      Steps: {', '.join(ap_steps)}")
-    print(f"      Calculation: {ap_sum:.2f} / {len(ground_truth_ids)} = {ap:.4f}")
+    print(f"     - Average Precision @{k}:")
+    print(f"       Formula: (Σ [Precision of each hit]) / |GroundTruth|")
+    if ap_steps: print(f"       Steps: {', '.join(ap_steps)}")
+    print(f"       Calculation: {ap_sum:.2f} / {len(ground_truth_ids)} = {ap:.4f}")
 
     relevance = [1 if rec in ground_truth_ids else 0 for rec in recommendations]
     ideal_relevance = sorted(relevance, reverse=True)
     dcg = sum([rel / np.log2(i + 2) for i, rel in enumerate(relevance)])
     idcg = sum([rel / np.log2(i + 2) for i, rel in enumerate(ideal_relevance)])
     ndcg = dcg / idcg if idcg > 0 else 0
-    print(f"    - nDCG @{k}:")
-    print(f"      Formula: DCG / IDCG")
-    print(f"      Calculation: {dcg:.2f} / {idcg:.2f} = {ndcg:.4f}")
+    print(f"     - nDCG @{k}:")
+    print(f"       Formula: DCG / IDCG")
+    print(f"       Calculation: {dcg:.2f} / {idcg:.2f} = {ndcg:.4f}")
     
     return {'hit_rate': is_hit, 'precision_at_k': precision, 'recall_at_k': recall, 'average_precision_at_k': ap, 'ndcg_at_k': ndcg}
 
@@ -77,7 +85,7 @@ def calculate_all_metrics(recommendations, ground_truth_ids, k):
 # =======================================================================
 def evaluate_model():
     print("--- Starting Offline Recommendation Model Evaluation ---")
-    load_dotenv()
+    load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
     db_url = os.environ.get('DATABASE_URL')
     if not db_url: raise ValueError("DATABASE_URL not found in .env file.")
     if db_url.startswith("postgres://"): db_url = db_url.replace("postgres://", "postgresql://", 1)
@@ -169,16 +177,18 @@ def evaluate_model():
         user_metrics_df = pd.DataFrame(user_predictions_metrics)
         avg_user_metrics = user_metrics_df.mean().to_dict()
         all_user_metrics.append(avg_user_metrics)
-        print(f"\n  --- User {user_id} Summary ---")
-        print(f"  Avg Hit Rate: {avg_user_metrics['hit_rate']:.2%}, Avg Precision: {avg_user_metrics['precision_at_k']:.2%}, Avg Recall: {avg_user_metrics['recall_at_k']:.2%}, MAP: {avg_user_metrics['average_precision_at_k']:.2%}, Avg nDCG: {avg_user_metrics['ndcg_at_k']:.2%}")
+        print(f"\n   --- User {user_id} Summary ---")
+        print(f"   Avg Hit Rate: {avg_user_metrics['hit_rate']:.2%}, Avg Precision: {avg_user_metrics['precision_at_k']:.2%}, Avg Recall: {avg_user_metrics['recall_at_k']:.2%}, MAP: {avg_user_metrics['average_precision_at_k']:.2%}, Avg nDCG: {avg_user_metrics['ndcg_at_k']:.2%}")
 
     if not all_user_metrics:
         print("\nEvaluation could not be completed.")
         return
 
+    # Define the output path for the debug file inside the 'scripts' directory
+    output_path = os.path.join(os.path.dirname(__file__), 'evaluation_results.csv')
     debug_df = pd.DataFrame(debug_results)
-    debug_df.to_csv('evaluation_results.csv', index=False)
-    print("\n\nDetailed debug file 'evaluation_results.csv' has been generated.")
+    debug_df.to_csv(output_path, index=False)
+    print(f"\n\nDetailed debug file '{output_path}' has been generated.")
 
     results_df = pd.DataFrame(all_user_metrics)
     final_metrics = results_df.mean()

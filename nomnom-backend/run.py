@@ -1,11 +1,16 @@
 # =======================================================================
-#  run.py
-#  ----------------------------------------------------------------------
+# run.py
+# -----------------------------------------------------------------------
+# This is the main entry point for the application.
+# To run the development server, execute this file: `python run.py`
+# =======================================================================
 
 from app import create_app
 
-# Create the Flask app instance using the app factory
+# Create the Flask app instance using the factory function
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # The host='0.0.0.0' makes the server accessible from your network,
+    # which is useful for testing on mobile devices.
+    app.run(host='0.0.0.0', debug=True)
