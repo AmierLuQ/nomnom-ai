@@ -185,7 +185,19 @@ export default function HomePage() {
         }
     };
 
-    const getMapUrl = (l) => { if (!l) return null; const [lat, lon] = l.split(','); if (lat && lon) { return `https://www.google.com/maps/embed/v1/place?key=YOUR_MAPS_API_KEY&q=${lat},${lon}`; } return null; };
+    const getMapUrl = (l) => {
+    if (!l) return null;
+    const [lat, lon] = l.split(',');
+    
+    // Get the API key securely from the environment variable
+    const apiKey = process.env.REACT_APP_Maps_API_KEY;
+
+    if (lat && lon && apiKey) {
+        return `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${lat},${lon}`;
+    }
+    // If the key is missing, return null to avoid showing a broken map
+    return null; 
+};
     const { status: openStatus, isOpen: isRestaurantOpen } = getOpenStatus(restaurant.opening_time, restaurant.closing_time);
     const mapUrl = getMapUrl(restaurant.location);
 
