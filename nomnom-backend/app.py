@@ -1,5 +1,5 @@
 # =======================================================================
-#  Imports
+# Imports
 # =======================================================================
 # Standard library imports
 import os
@@ -188,14 +188,13 @@ def user_profile():
                 if not tag_counts.empty: favorite_cuisine = tag_counts.index[0]
         stats = {'total_meals': total_meals, 'average_rating': avg_rating, 'favorite_cuisine': favorite_cuisine}
         
-        # FIX: Fetch the most recent review for each restaurant, not tied to meal date
         recent_meals_query = db.session.query(Meal, Restaurant.name).join(Restaurant, Meal.restaurant_id == Restaurant.id).filter(Meal.user_id == user_id).order_by(Meal.date.desc()).limit(5).all()
         recent_meals = []
         for meal, name in recent_meals_query:
             latest_review = Review.query.filter_by(user_id=user_id, restaurant_id=meal.restaurant_id).order_by(Review.date.desc()).first()
             recent_meals.append({
                 'meal_id': meal.id, 'restaurant_name': name, 'date': meal.date.isoformat(), 
-                'meal_time': meal.meal_time, # ADDED: Meal time
+                'meal_time': meal.meal_time,
                 'rating': latest_review.rating if latest_review else None
             })
             
@@ -217,7 +216,6 @@ def update_user_profile():
         user.phone = data.get('phone', user.phone)
         user.gender = data.get('gender', user.gender)
         user.location = data.get('location', user.location)
-        # Add logic to update lat/lon if location changes, possibly via a geocoding API
         db.session.commit()
         updated_user_info = {'username': user.username, 'email': user.email, 'name': user.name, 'age': user.age, 'phone': user.phone, 'gender': user.gender, 'location': user.location}
         return jsonify({'message': 'Profile updated successfully!', 'user': updated_user_info}), 200
@@ -226,7 +224,6 @@ def update_user_profile():
         print(f"❌ Error in /api/profile/update: {e}")
         return jsonify({'message': 'Server error updating profile'}), 500
 
-# --- NEW: Endpoint to change password ---
 @app.route('/api/profile/change-password', methods=['POST'])
 @jwt_required()
 def change_password():
@@ -286,6 +283,51 @@ def recommend():
     except Exception as e:
         print(f"❌ Error in /api/recommend: {e}")
         return jsonify({'message': 'Error generating recommendations'}), 500
+
+# --- NEW: Endpoint to handle user ratings ---
+@app.route('/api/rate', methods=['POST'])
+@jwt_required()
+def rate_restaurant():
+    """Creates or updates a user's review for a restaurant."""
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        restaurant_id = data.get('restaurant_id')
+        rating = data.get('rating')
+
+        if not all([restaurant_id, rating]):
+            return jsonify({'message': 'Missing restaurant_id or rating'}), 400
+
+        # Find the most recent review for this user and restaurant
+        review = Review.query.filter_by(user_id=user_id, restaurant_id=restaurant_id).order_by(Review.date.desc()).first()
+
+        if review:
+            # Update the existing review
+            review.rating = rating
+            review.date = datetime.datetime.utcnow().date()
+        else:
+            # Create a new review
+            last_review = Review.query.order_by(Review.id.desc()).first()
+            next_id_num = int(last_review.id.split('_')[1]) + 1 if last_review else 1
+            new_review_id = f"REV_{next_id_num:03}"
+
+            review = Review(
+                id=new_review_id,
+                user_id=user_id,
+                restaurant_id=restaurant_id,
+                date=datetime.datetime.utcnow().date(),
+                rating=rating
+            )
+            db.session.add(review)
+
+        db.session.commit()
+        return jsonify({'message': 'Rating submitted successfully!'}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Error in /api/rate: {e}")
+        return jsonify({'message': 'Server error submitting rating'}), 500
+
 
 # -----------------------------------------------------------------------
 # Debugging Endpoints

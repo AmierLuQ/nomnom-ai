@@ -13,6 +13,12 @@ def seed_data():
     from CSV files in a single database transaction.
     """
     print("Starting the seeding process...")
+
+    # --- ADD THIS BLOCK FOR DEBUGGING ---
+    db_url_from_env = os.environ.get('DATABASE_URL')
+    print(f"\n[DEBUG] Connecting to database specified in .env file:")
+    print(f"[DEBUG] {db_url_from_env}\n")
+    # ------------------------------------
     
     with app.app_context():
         print("Dropping all tables...")

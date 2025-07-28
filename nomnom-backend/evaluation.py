@@ -8,8 +8,7 @@ from dotenv import load_dotenv
 import warnings
 import numpy as np
 
-# Import the core recommendation logic from your existing file
-# FIX: Added 'haversine' to the import list
+
 from recommender import recommend_for_active_user, get_meal_count, haversine
 
 # Suppress UserWarning from sklearn about feature names
@@ -19,7 +18,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
 MINIMUM_MEALS_FOR_TESTING = 20 
 K = 10 # UPDATED: Using @10 for all metrics
 
-# Maps a mealtime name to a representative float hour
+
 MEAL_TIME_TO_HOUR_MAP = {
     "Suhoor": 5.5, "Breakfast": 8.5, "Brunch": 11.0, "Lunch": 14.0,
     "Tea Time": 16.75, "Linner": 18.5, "Dinner": 20.75, "Late Dinner": 22.75,

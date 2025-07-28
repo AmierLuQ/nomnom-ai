@@ -26,6 +26,13 @@ export default function HomePage() {
     const [hasFinished, setHasFinished] = useState(false);
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
+    
+    // --- ADDED: State for rating modal ---
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [ratingSuccess, setRatingSuccess] = useState(false);
+
 
     const isInitialLoad = useRef(true);
 
@@ -93,13 +100,57 @@ export default function HomePage() {
     };
 
     const handleSkip = (e) => { e.stopPropagation(); handleNextCard(); };
-    const handleEat = (e) => { e.stopPropagation(); console.log("Eat!", restaurants[currentIndex]?.id); handleNextCard(); };
+    
+    // --- MODIFIED: handleEat now opens the rating modal ---
+    const handleEat = (e) => {
+        e.stopPropagation();
+        console.log("Eat!", restaurants[currentIndex]?.id);
+        setShowRatingModal(true);
+    };
+
     const handleUndo = (e) => { e.stopPropagation(); if (currentIndex > 0) setCurrentIndex(c => c - 1); setShowDetails(false); };
     const handleFavorite = (e) => { e.stopPropagation(); console.log("Favorite!", restaurants[currentIndex]?.id); };
 
     const formatPriceRange = (priceRangeString) => {
         if (!priceRangeString) return '';
         return priceRangeString.replace(/\.00/g, '');
+    };
+
+    // --- ADDED: Function to handle rating submission ---
+    const submitRating = async (selectedRating) => {
+        const token = localStorage.getItem("token");
+        const restaurantId = restaurants[currentIndex]?.id;
+
+        try {
+            const response = await fetch("https://nomnom-ai.onrender.com/api/rate", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    restaurant_id: restaurantId,
+                    rating: selectedRating
+                }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to submit rating');
+            }
+            setRatingSuccess(true);
+            // After 2 seconds, close modal and move to next card
+            setTimeout(() => {
+                setShowRatingModal(false);
+                setRatingSuccess(false);
+                setRating(0);
+                handleNextCard();
+            }, 2000);
+
+        } catch (error) {
+            console.error("Rating submission error:", error);
+            // Optionally show an error message to the user
+            setShowRatingModal(false);
+            handleNextCard();
+        }
     };
 
     if (restaurants === null) {
@@ -113,7 +164,7 @@ export default function HomePage() {
     if (currentIndex >= restaurants.length) {
         if (hasFinished) {
             return (
-                 <div className="home-container">
+                <div className="home-container">
                     <div className="status-container finished-container">
                         <img src="/nomnom-ai-text-logo.PNG" alt="NomNom AI Logo" className="status-logo" />
                         <h2 className="finished-header">You've seen it all!</h2>
@@ -152,6 +203,42 @@ export default function HomePage() {
 
     return (
         <div className="home-container">
+            {/* --- ADDED: Rating Modal --- */}
+            {showRatingModal && (
+                <div className="rating-modal-overlay">
+                    <div className="rating-modal-content">
+                        {!ratingSuccess ? (
+                            <>
+                                <h2>Rate your meal at</h2>
+                                <h3>{restaurant.name}</h3>
+                                <div className="rating-stars">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <FaStar
+                                            key={star}
+                                            className="rating-star"
+                                            color={(hoverRating || rating) >= star ? "#FFD700" : "#CCCCCC"}
+                                            onMouseEnter={() => setHoverRating(star)}
+                                            onMouseLeave={() => setHoverRating(0)}
+                                            onClick={() => {
+                                                setRating(star);
+                                                submitRating(star);
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                                <button className="rating-skip-button" onClick={() => { setShowRatingModal(false); handleNextCard(); }}>
+                                    Skip Rating
+                                </button>
+                            </>
+                        ) : (
+                            <div className="rating-success-message">
+                                <p>Thank you for your feedback!</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            
             <header className="home-header">
                 <img src="/nomnom-ai-long-logo.PNG" alt="NomNom AI Logo" className="home-logo" />
                 <div className="home-user-info">
