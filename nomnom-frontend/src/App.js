@@ -3,11 +3,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
 // UPDATED: Corrected import paths for all page components
-import LandingPage from './components/pages/LandingPage/LandingPage';
-import LoginPage from './components/pages/LoginPage/LoginPage';
-import RegisterPage from './components/pages/RegisterPage/RegisterPage';
-import HomePage from './components/pages/HomePage/HomePage';
-import ProfilePage from './components/pages/ProfilePage/ProfilePage';
+import LandingPage from './pages/LandingPage/LandingPage';
+import LoginPage from './pages/LoginPage/LoginPage';
+import RegisterPage from './pages/RegisterPage/RegisterPage';
+import HomePage from './pages/HomePage/HomePage';
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 
 function App() {
   return (
