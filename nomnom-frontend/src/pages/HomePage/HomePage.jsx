@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import StatusScreen from "../../components/StatusScreen/StatusScreen"; 
 import nomnomTextLogo from '../../assets/images/nomnom-ai-text-logo.PNG';
 import nomnomLongLogo from '../../assets/images/nomnom-ai-long-logo.PNG';
+import nomnomLogo from '../../assets/images/nomnom-ai logo.PNG';
 
 export default function HomePage() {
     const [restaurants, setRestaurants] = useState(null);
@@ -154,7 +155,7 @@ export default function HomePage() {
             return (
                  <div className="home-container">
                     <div className="status-container finished-container">
-                        <img src={nomnomTextLogo} alt="NomNom AI Logo" className="status-logo" />
+                        <img src={nomnomLogo} alt="NomNom AI Logo" className="status-logo" />
                         <h2 className="finished-header">You've seen it all!</h2>
                         <p className="status-message">There are no more recommendations for you right now. Check back later!</p>
                         <button className="finished-button" onClick={() => window.location.reload()}>Start Over</button>

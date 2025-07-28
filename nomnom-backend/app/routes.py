@@ -8,7 +8,7 @@
 # Standard library imports
 import datetime
 import pandas as pd
-from zoneinfo import ZoneInfo 
+from zoneinfo import ZoneInfo
 
 # Third-party imports
 from flask import Blueprint, jsonify, request, current_app
@@ -90,12 +90,10 @@ def user_profile():
         user = User.query.filter_by(id=user_id).first()
         if not user: return jsonify({'message': 'User not found'}), 404
         user_info = {'username': user.username, 'email': user.email, 'name': user.name, 'age': user.age, 'phone': user.phone, 'gender': user.gender, 'location': user.location}
-        
         meals = Meal.query.filter_by(user_id=user_id).all()
         reviews = Review.query.filter_by(user_id=user_id).all()
         total_meals = len(meals)
         avg_rating = (sum(r.rating for r in reviews) / len(reviews)) if reviews else 0.0
-        
         favorite_cuisine = 'N/A'
         if meals:
             meal_restaurant_ids = [m.restaurant_id for m in meals]
@@ -103,32 +101,19 @@ def user_profile():
                 tags = db.session.query(Restaurant.tag_1, Restaurant.tag_2, Restaurant.tag_3).filter(Restaurant.id.in_(meal_restaurant_ids)).all()
                 tag_counts = pd.Series([tag for row in tags for tag in row if tag]).value_counts()
                 if not tag_counts.empty: favorite_cuisine = tag_counts.index[0]
-        
         stats = {'total_meals': total_meals, 'average_rating': avg_rating, 'favorite_cuisine': favorite_cuisine}
         
-        # --- MODIFIED LOGIC ---
-        # 1. Fetch the 5 most recent meals for the user.
-        recent_meals_query = db.session.query(Meal, Restaurant.name)\
-            .join(Restaurant, Meal.restaurant_id == Restaurant.id)\
-            .filter(Meal.user_id == user_id)\
-            .order_by(Meal.date.desc())\
-            .limit(5).all()
-
-        recent_meals_data = []
+        recent_meals_query = db.session.query(Meal, Restaurant.name).join(Restaurant, Meal.restaurant_id == Restaurant.id).filter(Meal.user_id == user_id).order_by(Meal.date.desc()).limit(5).all()
+        recent_meals = []
         for meal, name in recent_meals_query:
-            # 2. For each meal, find the user's single most recent review for that specific restaurant.
-            latest_review = Review.query.filter_by(user_id=user_id, restaurant_id=meal.restaurant_id)\
-                .order_by(Review.date.desc()).first()
-            
-            recent_meals_data.append({
-                'meal_id': meal.id, 
-                'restaurant_name': name, 
-                'date': meal.date.isoformat(), 
-                'meal_time': meal.meal_time,
-                'rating': latest_review.rating if latest_review else None # Use the rating from the latest review
+            latest_review = Review.query.filter_by(user_id=user_id, restaurant_id=meal.restaurant_id).order_by(Review.date.desc()).first()
+            recent_meals.append({
+                'meal_id': meal.id, 'restaurant_name': name, 'date': meal.date.isoformat(), 
+                'meal_time': meal.meal_time, 
+                'rating': latest_review.rating if latest_review else None
             })
             
-        return jsonify({'user_info': user_info, 'stats': stats, 'recent_meals': recent_meals_data}), 200
+        return jsonify({'user_info': user_info, 'stats': stats, 'recent_meals': recent_meals}), 200
     except Exception as e:
         print(f"❌ Error in /api/profile: {e}")
         return jsonify({'message': 'Server error fetching profile data'}), 500
@@ -214,6 +199,7 @@ def recommend():
         print(f"❌ Error in /api/recommend: {e}")
         return jsonify({'message': 'Error generating recommendations'}), 500
 
+# --- MODIFIED: Endpoint to handle user ratings and meals ---
 @main.route('/api/rate', methods=['POST'])
 @jwt_required()
 def rate_restaurant():
@@ -227,7 +213,7 @@ def rate_restaurant():
         if not all([restaurant_id, rating]):
             return jsonify({'message': 'Missing restaurant_id or rating'}), 400
 
-        # Get current time context in Malaysian Time for the new meal entry
+        
         malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
         now = datetime.datetime.now(malaysia_tz)
         day = now.strftime('%A')
@@ -245,23 +231,35 @@ def rate_restaurant():
 
         # Generate a new unique Meal ID
         last_meal = Meal.query.filter_by(user_id=user_id).order_by(Meal.id.desc()).first()
-        user_id_num = user_id.split('_')[1]
         meal_count = int(last_meal.id.split('_')[-1]) + 1 if last_meal else 1
-        new_meal_id = f"MEAL_{user_id_num}_{meal_count:03}"
+        new_meal_id = f"MEAL_{user_id.split('_')[1]}_{meal_count:03}"
 
-        new_meal = Meal(id=new_meal_id, user_id=user_id, restaurant_id=restaurant_id, date=now.date(), day=day, meal_time=meal_time)
+        new_meal = Meal(
+            id=new_meal_id,
+            user_id=user_id,
+            restaurant_id=restaurant_id,
+            date=now.date(),
+            day=day,
+            meal_time=meal_time
+        )
         db.session.add(new_meal)
 
-        # Logic for creating/updating the Review
+        # --- Logic for creating/updating the Review (as before) ---
         review = Review.query.filter_by(user_id=user_id, restaurant_id=restaurant_id).order_by(Review.date.desc()).first()
         if review:
             review.rating = rating
             review.date = now.date()
         else:
             last_review = Review.query.order_by(Review.id.desc()).first()
-            next_id_num = int(last_review.id.split('_')[-1]) + 1 if last_review else 1
-            new_review_id = f"REV_{user_id_num}_{next_id_num:03}" 
-            review = Review(id=new_review_id, user_id=user_id, restaurant_id=restaurant_id, date=now.date(), rating=rating)
+            next_id_num = int(last_review.id.split('_')[1]) + 1 if last_review else 1
+            new_review_id = f"REV_{next_id_num:03}" # Note: This ID generation is simple; for a larger app, a more robust method is needed.
+            review = Review(
+                id=new_review_id,
+                user_id=user_id,
+                restaurant_id=restaurant_id,
+                date=now.date(),
+                rating=rating
+            )
             db.session.add(review)
 
         db.session.commit()
