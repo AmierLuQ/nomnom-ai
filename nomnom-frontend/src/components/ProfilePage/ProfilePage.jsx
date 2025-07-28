@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUtensils, FaTags, FaStar, FaSignOutAlt, FaEdit, FaTimes, FaKey } from 'react-icons/fa';
-import '../styles/ProfilePage.css';
+import './ProfilePage.css';
 
 const ProfileLoadingScreen = () => (
     <div className="profile-container">
@@ -13,8 +13,11 @@ export default function ProfilePage() {
     const [profileData, setProfileData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
+    
     const [formData, setFormData] = useState({ name: '', phone: '', gender: '', location: '' });
+    
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -29,6 +32,7 @@ export default function ProfilePage() {
         })
         .then(res => {
             if (!res.ok) {
+                // If token is invalid, log the user out
                 localStorage.removeItem("token");
                 localStorage.removeItem("username");
                 navigate("/login");
@@ -38,6 +42,7 @@ export default function ProfilePage() {
         })
         .then(data => {
             setProfileData(data);
+            // Pre-fill the form with the fetched user data
             setFormData({
                 name: data.user_info.name,
                 phone: data.user_info.phone || '',
@@ -48,12 +53,14 @@ export default function ProfilePage() {
         .catch(err => console.error("Failed to fetch profile data:", err));
     }, [navigate]);
 
+    // Function to handle user logout
     const handleLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("username");
         navigate("/login");
     };
 
+    // Handlers for form input changes
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -64,6 +71,7 @@ export default function ProfilePage() {
         setPasswordData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Function to submit the updated profile data
     const handleUpdateProfile = (e) => {
         e.preventDefault();
         const token = localStorage.getItem("token");
@@ -74,15 +82,17 @@ export default function ProfilePage() {
         })
         .then(res => res.json())
         .then(data => {
-            alert(data.message);
+            alert(data.message); // Show success/error message
             if (data.user) {
+                // Update the profile data on the page with the new info
                 setProfileData(prev => ({ ...prev, user_info: data.user }));
-                setIsEditing(false);
+                setIsEditing(false); // Close the modal
             }
         })
         .catch(err => console.error("Failed to update profile:", err));
     };
 
+    // Function to submit the new password
     const handleChangePassword = (e) => {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -100,12 +110,13 @@ export default function ProfilePage() {
             alert(body.message);
             if (status === 200) {
                 setIsChangingPassword(false);
-                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' }); // Clear fields
             }
         })
         .catch(err => console.error("Failed to change password:", err));
     };
 
+    // Show loading screen until data is fetched
     if (!profileData) {
         return <ProfileLoadingScreen />;
     }
@@ -162,6 +173,7 @@ export default function ProfilePage() {
                 </div>
             </main>
 
+            {/* Edit Profile Modal */}
             {isEditing && (
                 <div className="modal-overlay">
                     <div className="modal-content">
@@ -185,6 +197,7 @@ export default function ProfilePage() {
                 </div>
             )}
 
+            {/* Change Password Modal */}
             {isChangingPassword && (
                 <div className="modal-overlay">
                     <div className="modal-content">

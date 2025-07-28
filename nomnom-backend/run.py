@@ -12,5 +12,5 @@ app = create_app()
 
 if __name__ == '__main__':
     # The host='0.0.0.0' makes the server accessible from your network,
-    # which is useful for testing on mobile devices.
+    # for testing on mobile devices.
     app.run(host='0.0.0.0', debug=True)

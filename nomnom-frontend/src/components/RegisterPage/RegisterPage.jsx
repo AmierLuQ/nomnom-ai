@@ -3,7 +3,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "../styles/RegisterPage.css";
+import "./RegisterPage.css";
+
+import nomnomTextLogo from '../../assets/images/nomnom-ai-text-logo.PNG';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -56,9 +58,9 @@ export default function RegisterPage() {
 
   return (
     <div className="register-auth-container">
-      {/* Logo Section */}
+      {/* UPDATED: Use imported logo */}
       <img
-        src="/nomnom-ai-text-logo.PNG"
+        src={nomnomTextLogo}
         alt="NomNom AI Logo"
         className="register-logo-img"
       />

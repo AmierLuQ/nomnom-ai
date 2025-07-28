@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import "../styles/HomePage.css";
+import "./HomePage.css";
 import {
     FaTimes, FaUndoAlt, FaHeart, FaUtensils, FaChevronUp, FaChevronDown,
     FaStar, FaStarHalfAlt, FaRegStar, FaMapMarkerAlt, FaRegStickyNote,
@@ -7,16 +7,9 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-// A new component for styled status screens (Loading, Finished, etc.)
-const StatusScreen = ({ message, showLogo = true }) => (
-    <div className="home-container">
-        <div className="status-container">
-            {showLogo && <img src="/nomnom-ai logo.PNG" alt="NomNom AI Logo" className="status-logo" />}
-            <p className="status-message">{message}</p>
-        </div>
-    </div>
-);
-
+import StatusScreen from "../../components/StatusScreen/StatusScreen"; 
+import nomnomTextLogo from '../../assets/images/nomnom-ai-text-logo.PNG';
+import nomnomLongLogo from '../../assets/images/nomnom-ai-long-logo.PNG';
 
 export default function HomePage() {
     const [restaurants, setRestaurants] = useState(null);
@@ -27,12 +20,11 @@ export default function HomePage() {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     
-    // --- ADDED: State for rating modal ---
+    // State for rating modal
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [ratingSuccess, setRatingSuccess] = useState(false);
-
 
     const isInitialLoad = useRef(true);
 
@@ -101,7 +93,6 @@ export default function HomePage() {
 
     const handleSkip = (e) => { e.stopPropagation(); handleNextCard(); };
     
-    // --- MODIFIED: handleEat now opens the rating modal ---
     const handleEat = (e) => {
         e.stopPropagation();
         console.log("Eat!", restaurants[currentIndex]?.id);
@@ -116,7 +107,6 @@ export default function HomePage() {
         return priceRangeString.replace(/\.00/g, '');
     };
 
-    // --- ADDED: Function to handle rating submission ---
     const submitRating = async (selectedRating) => {
         const token = localStorage.getItem("token");
         const restaurantId = restaurants[currentIndex]?.id;
@@ -137,7 +127,6 @@ export default function HomePage() {
                 throw new Error('Failed to submit rating');
             }
             setRatingSuccess(true);
-            // After 2 seconds, close modal and move to next card
             setTimeout(() => {
                 setShowRatingModal(false);
                 setRatingSuccess(false);
@@ -147,7 +136,6 @@ export default function HomePage() {
 
         } catch (error) {
             console.error("Rating submission error:", error);
-            // Optionally show an error message to the user
             setShowRatingModal(false);
             handleNextCard();
         }
@@ -164,9 +152,9 @@ export default function HomePage() {
     if (currentIndex >= restaurants.length) {
         if (hasFinished) {
             return (
-                <div className="home-container">
+                 <div className="home-container">
                     <div className="status-container finished-container">
-                        <img src="/nomnom-ai-text-logo.PNG" alt="NomNom AI Logo" className="status-logo" />
+                        <img src={nomnomTextLogo} alt="NomNom AI Logo" className="status-logo" />
                         <h2 className="finished-header">You've seen it all!</h2>
                         <p className="status-message">There are no more recommendations for you right now. Check back later!</p>
                         <button className="finished-button" onClick={() => window.location.reload()}>Start Over</button>
@@ -203,7 +191,6 @@ export default function HomePage() {
 
     return (
         <div className="home-container">
-            {/* --- ADDED: Rating Modal --- */}
             {showRatingModal && (
                 <div className="rating-modal-overlay">
                     <div className="rating-modal-content">
@@ -240,7 +227,7 @@ export default function HomePage() {
             )}
             
             <header className="home-header">
-                <img src="/nomnom-ai-long-logo.PNG" alt="NomNom AI Logo" className="home-logo" />
+                <img src={nomnomLongLogo} alt="NomNom AI Logo" className="home-logo" />
                 <div className="home-user-info">
                     <span className="home-welcome-text">Hi, {username}!</span>
                     <button className="home-profile-button" onClick={() => navigate('/profile')}>

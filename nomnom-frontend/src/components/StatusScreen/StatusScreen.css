@@ -1,0 +1,83 @@
+/* ==========================================================================
+   StatusScreen.css
+   Styles for the reusable status/loading screen component.
+   ========================================================================== */
+
+/* This container is used on multiple pages, so it's included here
+   to ensure the StatusScreen component is always styled correctly. */
+.home-container {
+    background-image: linear-gradient(#011627, #011627, #010813);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #FDFFFC;
+    font-family: "DM Sans", sans-serif;
+    text-align: center;
+    overflow: hidden;
+}
+
+.status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1; /* Take up all available vertical space */
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.status-logo {
+    width: auto;
+    height: 24vh;
+    object-fit: contain;
+    margin-bottom: 12px;
+    filter: drop-shadow(0px 8px 20px #00000060);
+    animation: turnin 6s ease-in-out infinite;
+}
+
+@keyframes turnin {
+    0%, 5%, 75%, 100% {
+        transform: rotate(0deg);
+    }
+    20%, 60% {
+        transform: rotate(90deg);
+    }
+}
+
+.status-message {
+    font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    color: #FDFFFC;
+    opacity: 0.8;
+}
+
+/* Specific styling for the "Finished" screen */
+.finished-container .finished-header {
+    font-family: "Inter", sans-serif;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.finished-container .status-message {
+    margin-bottom: 32px;
+}
+
+.finished-button {
+    background-color: #41EAD4;
+    color: #011627;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.finished-button:hover {
+    background-color: #FDFFFC;
+    transform: scale(1.05);
+}

@@ -1,0 +1,49 @@
+# =======================================================================
+# Python & Flask .gitignore
+# =======================================================================
+
+# -----------------------------------------------------------------------
+# Environment & Dependencies
+# -----------------------------------------------------------------------
+# Ignore the virtual environment folder. This is the most important rule.
+venv/
+.venv/
+
+# Ignore the environment file, which contains secrets and keys.
+# This is critical for security.
+.env
+
+# -----------------------------------------------------------------------
+# Python Cache & Compiled Files
+# -----------------------------------------------------------------------
+# Ignore Python's automatically generated cache folder.
+__pycache__/
+
+# Ignore compiled Python files.
+*.pyc
+
+# -----------------------------------------------------------------------
+# Local Database & Instance Files
+# -----------------------------------------------------------------------
+# Ignore the local SQLite database instance folder.
+instance/
+*.db
+*.sqlite3
+
+# -----------------------------------------------------------------------
+# Generated Files
+# -----------------------------------------------------------------------
+# Ignore the results from your evaluation script.
+evaluation_results.csv
+
+# -----------------------------------------------------------------------
+# IDE & System Files (Optional but Recommended)
+# -----------------------------------------------------------------------
+# Ignore Visual Studio Code settings folder.
+.vscode/
+
+# Ignore Windows thumbnail cache files.
+Thumbs.db
+
+# Ignore macOS folder attributes file.
+.DS_Store

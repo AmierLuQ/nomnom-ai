@@ -1,33 +1,22 @@
-import React, { useState, useRef } from "react";
+import React, "react";
 import { useNavigate } from "react-router-dom";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import "../styles/LandingPage.css";
+import "./LandingPage.css";
+
+import nomnomLogo from '../../assets/images/nomnom-ai logo.PNG';
+import coralLogo from '../../assets/images/onside_coral_nomnom-ai logo.PNG';
+import orangeLogo from '../../assets/images/onside_orange_nomnom-ai logo.PNG';
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [indicatorActive, setIndicatorActive] = useState(false);
-  const featuresRef = useRef(null); // Ref to the first feature card
 
   const handleStart = () => {
     navigate("/login");
   };
 
-  const toggleIndicator = () => {
-    if (!indicatorActive) {
-      // Scroll down to features section
-      const offsetTop = featuresRef.current.offsetTop - 96;
-      window.scrollTo({ top: offsetTop, behavior: "smooth" });
-    } else {
-      // Scroll back to top
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    setIndicatorActive(!indicatorActive);
-  };
-
   return (
     <div className="landing-container">
       <img
-        src="/nomnom-ai logo.PNG"
+        src={nomnomLogo}
         alt="NomNom AI Logo"
         className="landing-logo"
       />
@@ -43,18 +32,10 @@ export default function LandingPage() {
         Get Started
       </button>
 
-      {/* Swipe Indicator */}
-      <div
-        className={`swipe-indicator ${indicatorActive ? "active" : ""}`}
-        onClick={toggleIndicator}
-      >
-        {indicatorActive ? <FaChevronUp /> : <FaChevronDown />}
-      </div>
-
-      <div className="features-section" ref={featuresRef}>
+      <div className="features-section">
         <div className="feature-card">
           <img
-            src="/onside_coral_nomnom-ai logo.PNG"
+            src={coralLogo}
             alt="AI Recommendations"
             className="feature-icon"
           />
@@ -66,7 +47,7 @@ export default function LandingPage() {
 
         <div className="feature-card">
           <img
-            src="/onside_orange_nomnom-ai logo.PNG"
+            src={orangeLogo}
             alt="Quick Decisions"
             className="feature-icon"
           />
@@ -78,7 +59,7 @@ export default function LandingPage() {
 
         <div className="feature-card">
           <img
-            src="/onside_coral_nomnom-ai logo.PNG"
+            src={coralLogo}
             alt="Budget-Friendly"
             className="feature-icon"
           />
@@ -90,7 +71,7 @@ export default function LandingPage() {
 
         <div className="feature-card">
           <img
-            src="/onside_orange_nomnom-ai logo.PNG"
+            src={orangeLogo}
             alt="Minimal Effort"
             className="feature-icon"
           />

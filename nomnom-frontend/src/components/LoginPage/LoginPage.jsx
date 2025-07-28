@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import "../styles/LoginPage.css";
+import "./LoginPage.css";
+
+import nomnomTextLogo from '../../assets/images/nomnom-ai-text-logo.PNG';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState(""); // Track username
-  const [password, setPassword] = useState(""); // Track password
-  const [error, setError] = useState("");       // Track error messages
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const togglePassword = () => setShowPassword(!showPassword);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
 
     try {
       const response = await fetch("https://nomnom-ai.onrender.com/api/login", {
@@ -23,7 +25,7 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: username, // Send username
+          username: username,
           password: password,
         }),
       });
@@ -31,11 +33,8 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Save JWT token + username to localStorage
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("username", data.username);
-
-        // Redirect to home page
         navigate("/home");
       } else {
         setError(data.message || "Login failed. Please try again.");
@@ -54,8 +53,8 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: "potato", // 👈 your potato account username
-          password: "potato123", // 👈 your potato account password
+          username: "potato",
+          password: "potato123",
         }),
       });
 
@@ -75,32 +74,25 @@ export default function LoginPage() {
     }
   };
 
-
   return (
     <div className="login-auth-container">
-      {/* Potato Button */}
       <button className="login-potato-button" onClick={handlePotatoLogin}>
         Potato
       </button>
-
-
-      {/* Logo Section */}
+      
       <img
-        src="/nomnom-ai-text-logo.PNG"
+        src={nomnomTextLogo}
         alt="NomNom AI Logo"
         className="login-logo-img"
       />
 
-      {/* Form Container */}
       <div className="login-form-container">
         <h2 className="login-form-title">Login.</h2>
         <p className="login-form-subtitle">Sign in to continue.</p>
 
-        {/* Error Message */}
         {error && <div className="login-error-message">{error}</div>}
 
         <form className="login-form" onSubmit={handleLogin}>
-          {/* Username Field */}
           <div className="login-form-input-group">
             <label className="login-form-label">USERNAME</label>
             <input
@@ -113,7 +105,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Password Field */}
           <div className="login-form-input-group">
             <label className="login-form-label">PASSWORD</label>
             <div className="login-password-field">
