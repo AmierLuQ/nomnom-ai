@@ -7,8 +7,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import StatusScreen from "../../components/StatusScreen/StatusScreen"; 
-import nomnomTextLogo from '../../assets/images/nomnom-ai-text-logo.PNG';
+import StatusScreen from "../../components/StatusScreen/StatusScreen";
 import nomnomLongLogo from '../../assets/images/nomnom-ai-long-logo.PNG';
 import nomnomLogo from '../../assets/images/nomnom-ai logo.PNG';
 
