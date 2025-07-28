@@ -79,7 +79,8 @@
   font-size: 12px;
   font-weight: bold;
   color: #FC3B48;
-  display: block;
+  display: flex;
+  transform: translateX(10px);
 }
 
 .register-form-input {

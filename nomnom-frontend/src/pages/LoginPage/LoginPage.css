@@ -69,6 +69,7 @@
 }
 
 .login-form-input-group {
+  right: 0;
   width: 280px;
   margin-bottom: 8px;
   transform: translateX(-10px);
@@ -79,7 +80,8 @@
   font-size: 12px;
   font-weight: bold;
   color: #FC3B48;
-  display: block;
+  display: flex;
+  transform: translateX(10px);
 }
 
 .login-form-input {

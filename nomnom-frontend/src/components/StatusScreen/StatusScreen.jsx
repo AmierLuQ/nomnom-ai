@@ -1,5 +1,5 @@
 import React from 'react';
-import './StatusScreen.css'; // <-- FIX: Added the CSS import
+import './StatusScreen.css';
 import nomnomLogo from '../../assets/images/nomnom-ai logo.PNG';
 
 // A reusable component for styled status screens (Loading, Finished, etc.)
