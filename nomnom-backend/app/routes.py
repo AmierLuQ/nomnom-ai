@@ -8,6 +8,7 @@
 # Standard library imports
 import datetime
 import pandas as pd
+from zoneinfo import ZoneInfo # <-- ADDED: For timezone-aware dates
 
 # Third-party imports
 from flask import Blueprint, jsonify, request, current_app
@@ -198,10 +199,11 @@ def recommend():
         print(f"❌ Error in /api/recommend: {e}")
         return jsonify({'message': 'Error generating recommendations'}), 500
 
+# --- MODIFIED: Endpoint to handle user ratings and meals ---
 @main.route('/api/rate', methods=['POST'])
 @jwt_required()
 def rate_restaurant():
-    """Creates or updates a user's review for a restaurant."""
+    """Creates a meal entry and creates/updates a user's review for a restaurant."""
     try:
         user_id = get_jwt_identity()
         data = request.get_json()
@@ -211,27 +213,59 @@ def rate_restaurant():
         if not all([restaurant_id, rating]):
             return jsonify({'message': 'Missing restaurant_id or rating'}), 400
 
-        review = Review.query.filter_by(user_id=user_id, restaurant_id=restaurant_id).order_by(Review.date.desc()).first()
+        # --- ADDED: Create a new Meal entry ---
+        # Get current time context in Malaysian Time
+        malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
+        now = datetime.datetime.now(malaysia_tz)
+        day = now.strftime('%A')
+        hour = now.hour + now.minute / 60.0
+        
+        if 4.0 <= hour < 7.0: meal_time = "Suhoor"
+        elif 7.0 <= hour < 10.0: meal_time = "Breakfast"
+        elif 10.0 <= hour < 12.0: meal_time = "Brunch"
+        elif 12.0 <= hour < 16.0: meal_time = "Lunch"
+        elif 16.0 <= hour < 17.5: meal_time = "Tea Time"
+        elif 17.5 <= hour < 19.5: meal_time = "Linner"
+        elif 19.5 <= hour < 22.0: meal_time = "Dinner"
+        elif 22.0 <= hour < 23.5: meal_time = "Late Dinner"
+        else: meal_time = "Midnight Snack"
 
+        # Generate a new unique Meal ID
+        last_meal = Meal.query.filter_by(user_id=user_id).order_by(Meal.id.desc()).first()
+        meal_count = int(last_meal.id.split('_')[-1]) + 1 if last_meal else 1
+        new_meal_id = f"MEAL_{user_id.split('_')[1]}_{meal_count:03}"
+
+        new_meal = Meal(
+            id=new_meal_id,
+            user_id=user_id,
+            restaurant_id=restaurant_id,
+            date=now.date(),
+            day=day,
+            meal_time=meal_time
+        )
+        db.session.add(new_meal)
+
+        # --- Logic for creating/updating the Review (as before) ---
+        review = Review.query.filter_by(user_id=user_id, restaurant_id=restaurant_id).order_by(Review.date.desc()).first()
         if review:
             review.rating = rating
-            review.date = datetime.datetime.utcnow().date()
+            review.date = now.date()
         else:
             last_review = Review.query.order_by(Review.id.desc()).first()
             next_id_num = int(last_review.id.split('_')[1]) + 1 if last_review else 1
-            new_review_id = f"REV_{next_id_num:03}"
-
+            new_review_id = f"REV_{next_id_num:03}" # Note: This ID generation is simple; for a larger app, a more robust method is needed.
             review = Review(
                 id=new_review_id,
                 user_id=user_id,
                 restaurant_id=restaurant_id,
-                date=datetime.datetime.utcnow().date(),
+                date=now.date(),
                 rating=rating
             )
             db.session.add(review)
 
         db.session.commit()
-        return jsonify({'message': 'Rating submitted successfully!'}), 201
+        return jsonify({'message': 'Rating and meal logged successfully!'}), 201
+
     except Exception as e:
         db.session.rollback()
         print(f"❌ Error in /api/rate: {e}")
