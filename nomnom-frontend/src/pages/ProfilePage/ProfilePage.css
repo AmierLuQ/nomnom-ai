@@ -149,8 +149,9 @@
 .history-title {
     font-size: 20px;
     font-weight: 1000;
+    color: #41EAD4;
     text-align: left;
-    margin: 0 0 24px 0;
+    margin: 0 0 20px 0;
 }
 
 .history-list {
