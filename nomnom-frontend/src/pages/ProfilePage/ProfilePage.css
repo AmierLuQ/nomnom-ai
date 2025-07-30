@@ -70,6 +70,7 @@
     align-items: center;
     gap: 4px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .profile-avatar {
@@ -111,6 +112,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-card {
@@ -144,12 +146,13 @@
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 15px;
     padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .history-title {
     font-size: 20px;
     font-weight: 1000;
-    color: #41EAD4;
+    color: #FF7E21;
     text-align: left;
     margin: 0 0 20px 0;
 }
