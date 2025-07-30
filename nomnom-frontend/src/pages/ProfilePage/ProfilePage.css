@@ -112,7 +112,6 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-card {
@@ -123,6 +122,7 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-icon {
@@ -151,8 +151,8 @@
 
 .history-title {
     font-size: 20px;
-    font-weight: 1000;
-    color: #FF7E21;
+    font-weight: 1200;
+    letter-spacing: 2px;
     text-align: left;
     margin: 0 0 20px 0;
 }
